@@ -29,8 +29,7 @@ from tqdm import tqdm
 """
 
 client = Client(user_api_key.key_id, user_api_key.secret_key_id)
-#symbolList = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT"]
-symbolList = ["AVAXUSDT", "NEARUSDT"]
+symbolList = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT"]
 timeFrame= client.KLINE_INTERVAL_3MINUTE
 
 startDateOfData = "1 January, 2020"
