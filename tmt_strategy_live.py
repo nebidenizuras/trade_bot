@@ -55,8 +55,9 @@ limit = 15
 symbol = "SOLUSDT"
 
 while (1):
-    if (start == False):
+    if (start == False) or ((start == True) and (position == "")):
         limit = 15
+        start = False
         candles = client.get_klines(symbol=symbol, interval=interval, limit=limit) 
         df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                             'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -121,11 +122,8 @@ while (1):
         debugMsg += "FIB Değerleri -> \nFIB_1.000 : " + str(df["FIB_1"][limit-2]) + "\nFIB_0.500 : " + str(df["FIB_0_500"][limit-2]) + "\nFIB_0.000 : " + str(df["FIB_0"][limit-2]) + "\n"    
         debugMsg += "EMA5 -> " + str(df["EMA5"][limit-2]) + "\nEMA8 -> " + str(df["EMA8"][limit-2]) + "\n"
         debugMsg += "\n"  
-        send_message(debugMsg)
-        debugMsg = ""
-        time.sleep(1)
 
-    if start and (df["high"][limit-1] >= ustGirisFiyat) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
+    if start and (df["high"][limit-1] >= ustGirisFiyat and ustGirisFiyat >= df["low"][limit-1]) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
         islemSayisi = islemSayisi + 1
         cuzdan = cuzdan - (pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * fee * kaldirac)
         islemSirasi[islemSayisi] = "Long"
@@ -138,7 +136,7 @@ while (1):
         send_message(debugMsg)
         debugMsg = ""
 
-    if start and (df["low"][limit-1] <= altGirisFiyat) and islemSayisi < maxPozisyonSayisi and position != "Short" and short_signal: #short gir
+    if start and (df["low"][limit-1] <= altGirisFiyat and altGirisFiyat <= df["high"][limit-1]) and islemSayisi < maxPozisyonSayisi and position != "Short" and short_signal: #short gir
         islemSayisi = islemSayisi + 1        
         cuzdan = cuzdan - (pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * fee * kaldirac)
         islemSirasi[islemSayisi] = "Short"
