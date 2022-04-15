@@ -1,8 +1,6 @@
 from operator import index
 import pandas_ta as tb
 import pandas as pd
-import csv
-import os
 from Indicators.fibonacci_retracement import calculate_fib
 import array as arr
 from binance.client import Client  

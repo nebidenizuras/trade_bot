@@ -1,7 +1,5 @@
 from datetime import datetime 
 import requests 
-import tkinter 
-from tkinter import *
 from threading import Thread 
 
 
