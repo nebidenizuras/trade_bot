@@ -13,7 +13,7 @@ start = False
 # Martingale Katsayılar
 martingaleKatsayilar = [0, 1, 1.4, 1, 1.4, 1.9, 2.5, 3.3, 4.4] # 16,9 katsayı 
 #martingaleKatsayilar = [0, 1, 2.33, 3.1, 4.15, 5.55, 7.4, 9.85, 13.1, 17.45, 23.3, 31.1, 41.45] # 12 Pozisyon Hiç Efektif Değil
-maxPozisyonSayisi = 1
+maxPozisyonSayisi = 5
 katSayilarToplami = 1 # + 1 katsayı fee için
 for i in range (maxPozisyonSayisi + 1):
     katSayilarToplami = katSayilarToplami + martingaleKatsayilar[i]
@@ -44,8 +44,10 @@ stopTime = 0
 toplamIslemSayisi = 0
 islemSayisi = 0
 
-csvName = "Historical_Data/LUNAUSDT_15m.csv"
-logFileName = "LogFile_" + "LUNAUSDT_15m" + ".txt"
+coin = "WAVESUSDT"
+timeFrame = "15m"
+csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
+logFileName = "LogFile_" +  coin + "_" + timeFrame + ".txt"
 
 if os.path.isfile(logFileName):
     os.remove(logFileName)
@@ -69,15 +71,15 @@ calculate_fib(df,13)
 print("Strategy Back Test is starting......")
 
 for i in range(df.shape[0]):
-    if i > 50:
-        long_signal = df["EMA5"][i-2] > df["EMA8"][i-2]
-        short_signal = df["EMA5"][i-2] < df["EMA8"][i-2]
+    if i > 20:
+        long_signal = df["EMA5"][i] > df["EMA8"][i]
+        short_signal = df["EMA5"][i] < df["EMA8"][i]
 
         ### Bandı ve Giriş Bilgilerini Ayarla
-        if (position == "") and (start == False) and (long_signal or short_signal):
+        if (position == "") and (long_signal or short_signal):
             start = True
-            referansOrtaFiyat = df["FIB_0_500"][i-2]
-            startTime =  df["openTime"][i-2]
+            referansOrtaFiyat = df["FIB_0_500"][i]
+            startTime =  df["openTime"][i]
             altGirisFiyat = referansOrtaFiyat * (1 - girisOrani)
             ustGirisFiyat = referansOrtaFiyat * (1 + girisOrani)
             altCikisFiyat = altGirisFiyat * (1 - cikisOrani)
@@ -94,28 +96,28 @@ for i in range(df.shape[0]):
             debugMsg += "Alt Çıkış           : " + str(altCikisFiyat) + "\n"
             debugMsg += "Alt Giriş           : " + str(altGirisFiyat) + "\n"
             debugMsg += "\n"  
-            debugMsg += "FIB Değerleri -> FIB_1 : " + str(df["FIB_1"][i-2]) + ", FIB_0_500 : " + str(df["FIB_0_500"][i-2]) + ", FIB_0 : " + str(df["FIB_0"][i-2]) + "\n"    
-            debugMsg += "EMA 5 -> " + str(df["EMA5"][i-2]) + ", EMA8 -> " + str(df["EMA8"][i-2]) + "\n"
+            debugMsg += "FIB Değerleri -> FIB_1 : " + str(df["FIB_1"][i]) + ", FIB_0_500 : " + str(df["FIB_0_500"][i]) + ", FIB_0 : " + str(df["FIB_0"][i]) + "\n"    
+            debugMsg += "EMA 5 -> " + str(df["EMA5"][i]) + ", EMA8 -> " + str(df["EMA8"][i]) + "\n"
             debugMsg += "\n"  
 
-        if start and (df["high"][i-1] >= ustGirisFiyat) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
+        if start and (df["high"][i] >= ustGirisFiyat and ustGirisFiyat >= df["low"][i]) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
             islemSayisi = islemSayisi + 1
             cuzdan = cuzdan - (pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * fee * kaldirac)
             islemSirasi[islemSayisi] = "Long"
             position = "Long"     
             debugMsg += str(islemSayisi) + ".Pozisyon " + str(position) + "\n"
-            debugMsg += "İşlem Zamanı : " + str(df["openTime"][i-1]) + "\n"
+            debugMsg += "İşlem Zamanı : " + str(df["openTime"][i]) + "\n"
             debugMsg += "İşlem Fiyatı : " + str(ustGirisFiyat) + "\n"
             debugMsg += "İşlem Büyüklüğü : " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
             debugMsg += "\n"  
 
-        if start and (df["low"][i-1] <= altGirisFiyat) and islemSayisi < maxPozisyonSayisi and position != "Short" and short_signal: #short gir
+        if start and (df["low"][i] <= altGirisFiyat and altGirisFiyat <= df["high"][i]) and islemSayisi < maxPozisyonSayisi and position != "Short" and short_signal: #short gir
             islemSayisi = islemSayisi + 1        
             cuzdan = cuzdan - (pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * fee * kaldirac)
             islemSirasi[islemSayisi] = "Short"
             position = "Short"            
             debugMsg += str(islemSayisi) + ".Pozisyon : " + str(position) + "\n"
-            debugMsg += "İşlem Zamanı : " + str(df["openTime"][i-1]) + "\n"
+            debugMsg += "İşlem Zamanı : " + str(df["openTime"][i]) + "\n"
             debugMsg += "İşlem Fiyatı : " + str(altGirisFiyat) + "\n"
             debugMsg += "İşlem Büyüklüğü : " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
             debugMsg += "\n"  
@@ -200,6 +202,7 @@ for i in range(df.shape[0]):
 lastDebugMsg = ""
 lastDebugMsg += "\n"
 lastDebugMsg += "****************************************\n"
+lastDebugMsg += "Parite : " + coin + "Zaman Dilimi : " + timeFrame + "\n"
 lastDebugMsg += "Strateji -> EMA 5 Close  / EMA 8 Close Signal\n" 
 lastDebugMsg += "EMA 5 > EMA 8 = BUY -  EMA 5 < EMA 8 = SELL - Fibonacci 13\n"
 lastDebugMsg += "İşleme Giriş Bant Genişliği  : % " + str(bantReferans*100) + "\n"
