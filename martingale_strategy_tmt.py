@@ -13,7 +13,7 @@ start = False
 # Martingale Katsayılar
 martingaleKatsayilar = [0, 1, 1.4, 1, 1.4, 1.9, 2.5, 3.3, 4.4] # 16,9 katsayı 
 #martingaleKatsayilar = [0, 1, 2.33, 3.1, 4.15, 5.55, 7.4, 9.85, 13.1, 17.45, 23.3, 31.1, 41.45] # 12 Pozisyon Hiç Efektif Değil
-maxPozisyonSayisi = 5
+maxPozisyonSayisi = 1
 katSayilarToplami = 1 # + 1 katsayı fee için
 for i in range (maxPozisyonSayisi + 1):
     katSayilarToplami = katSayilarToplami + martingaleKatsayilar[i]
@@ -40,13 +40,18 @@ cuzdan = baslangicPara
 startTime = 0
 stopTime = 0
 
+fibPeriod = 13
+emaBuy = 5
+emaSell = 8
+
 # Order Amount Calculation
 toplamIslemSayisi = 0
 islemSayisi = 0
 
-coin = "WAVESUSDT"
+coin = "SOLUSDT"
 timeFrame = "15m"
 csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
+#csvName = coin + "_" + timeFrame + ".csv"
 logFileName = "LogFile_" +  coin + "_" + timeFrame + ".txt"
 
 if os.path.isfile(logFileName):
@@ -64,16 +69,18 @@ df['high'] = df['high'].astype('float')
 df['low'] = df['low'].astype('float')
 df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms")
 df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms")
-df["EMA5"] = tb.ema(df["close"],5)
-df["EMA8"] = tb.ema(df["close"],8)
-calculate_fib(df,13)
+df["EMABUY"] = tb.ema(df["close"],emaBuy)
+df["EMASELL"] = tb.ema(df["close"],emaSell)
+df["FIB_1"] = calculate_fib(df,fibPeriod, 1)
+df["FIB_0_500"] = calculate_fib(df,fibPeriod, 0.5)
+df["FIB_0"] = calculate_fib(df,fibPeriod, 0)  
 
 print("Strategy Back Test is starting......")
 
 for i in range(df.shape[0]):
-    if i > 20:
-        long_signal = df["EMA5"][i] > df["EMA8"][i]
-        short_signal = df["EMA5"][i] < df["EMA8"][i]
+    if i > (fibPeriod + 15):
+        long_signal = df["EMABUY"][i] > df["EMASELL"][i]
+        short_signal = df["EMABUY"][i] < df["EMASELL"][i]
 
         ### Bandı ve Giriş Bilgilerini Ayarla
         if (position == "") and (long_signal or short_signal):
@@ -93,11 +100,16 @@ for i in range(df.shape[0]):
             debugMsg += "Üst Çıkış           : " + str(ustCikisFiyat) + "\n"
             debugMsg += "Üst Giriş           : " + str(ustGirisFiyat) + "\n"
             debugMsg += "Referans Orta Fiyat : " + str(referansOrtaFiyat) + "\n"
-            debugMsg += "Alt Çıkış           : " + str(altCikisFiyat) + "\n"
             debugMsg += "Alt Giriş           : " + str(altGirisFiyat) + "\n"
+            debugMsg += "Alt Çıkış           : " + str(altCikisFiyat) + "\n"
             debugMsg += "\n"  
-            debugMsg += "FIB Değerleri -> FIB_1 : " + str(df["FIB_1"][i]) + ", FIB_0_500 : " + str(df["FIB_0_500"][i]) + ", FIB_0 : " + str(df["FIB_0"][i]) + "\n"    
-            debugMsg += "EMA 5 -> " + str(df["EMA5"][i]) + ", EMA8 -> " + str(df["EMA8"][i]) + "\n"
+            debugMsg += "FIB Değerleri -> \n"
+            debugMsg += "FIB_1_000 : " + str(df["FIB_1"][i]) + "\n"
+            debugMsg += "FIB_0_500 : " + str(df["FIB_0_500"][i]) + "\n"
+            debugMsg += "FIB_0_000 : " + str(df["FIB_0"][i]) + "\n"    
+            debugMsg += "\n"
+            debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(df["EMABUY"][i]) + "\n" 
+            debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][i]) + "\n"
             debugMsg += "\n"  
 
         if start and (df["high"][i] >= ustGirisFiyat and ustGirisFiyat >= df["low"][i]) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
@@ -202,9 +214,9 @@ for i in range(df.shape[0]):
 lastDebugMsg = ""
 lastDebugMsg += "\n"
 lastDebugMsg += "****************************************\n"
-lastDebugMsg += "Parite : " + coin + "Zaman Dilimi : " + timeFrame + "\n"
-lastDebugMsg += "Strateji -> EMA 5 Close  / EMA 8 Close Signal\n" 
-lastDebugMsg += "EMA 5 > EMA 8 = BUY -  EMA 5 < EMA 8 = SELL - Fibonacci 13\n"
+lastDebugMsg += "Parite : " + coin + "\nZaman Dilimi : " + timeFrame + "\n"
+lastDebugMsg += "Strateji -> EMA" + str(emaBuy) + " Close / EMA" + str(emaSell) + " Close Signal\n" 
+lastDebugMsg += "Fibonacci " + str(fibPeriod) + "\n"
 lastDebugMsg += "İşleme Giriş Bant Genişliği  : % " + str(bantReferans*100) + "\n"
 lastDebugMsg += "Başlangıç Para($)            : " + str(baslangicPara) + "\n"
 lastDebugMsg += "Kar($)                       : " + str(cuzdan - baslangicPara) + "\n"
