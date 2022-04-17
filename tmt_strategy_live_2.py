@@ -131,6 +131,7 @@ while (1):
         pozisyonBuyuklugu = cuzdan / katSayilarToplami
 
         debugMsg = "Sinyal Oluştu ->\n" + str(symbol) + " " + str(interval) + "\n"
+        debugMsg += "Güncel Cüzdan($) : " + str(cuzdan) + "\n" 
         debugMsg += "---------------------------------------\n" 
         debugMsg += str(toplamIslemSayisi + 1) + ". İşlem Sinyali Geldi\n" 
         debugMsg += str(startTime) + "\n"

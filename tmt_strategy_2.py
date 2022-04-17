@@ -52,7 +52,7 @@ emaSell = 3
 toplamIslemSayisi = 0
 islemSayisi = 0
 
-coin = "SOLUSDT"
+coin = "MTLUSDT"
 timeFrame = "15m"
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = coin + "_" + timeFrame + ".csv"
@@ -82,7 +82,7 @@ df["FIB_0"] = calculate_fib(df,fibVal, 0)
 print("Strategy Back Test is starting......")
 
 for i in range(df.shape[0]):
-    if i > 30:
+    if i > (fibVal + 2):
         long_signal = df["EMABUY"][i] > df["EMASELL"][i]
         short_signal = df["EMABUY"][i] < df["EMASELL"][i]
 
