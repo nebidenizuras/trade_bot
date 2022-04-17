@@ -1,3 +1,7 @@
+'''
+Bu stratejide işleme giriş bandı belirli kar oranına göre belirlenmektedir.
+'''
+
 from operator import index
 import pandas_ta as tb
 import pandas as pd
@@ -8,7 +12,6 @@ import array as arr
 
 kaldirac = 1
 start = False
-
 
 # Martingale Katsayılar
 martingaleKatsayilar = [0, 1, 1.4, 1, 1.4, 1.9, 2.5, 3.3, 4.4] # 16,9 katsayı 
