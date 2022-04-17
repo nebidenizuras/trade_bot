@@ -52,12 +52,16 @@ islemSayisi = 0
 # Parite Bilgileri
 interval = '15m' 
 limit = 15
-symbol = "SOLUSDT"
+symbol = "WAVESUSDT"
+
+df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
+      'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
+      'taker_buy_quote_asset_volume', 'ignore']
 
 while (1):
-    if (start == False) or ((start == True) and (position == "")):
-        limit = 15
+    if (position == ""):
         start = False
+        limit = 20
         candles = client.get_klines(symbol=symbol, interval=interval, limit=limit) 
         df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                             'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -71,11 +75,13 @@ while (1):
         df['high'] = df['high'].astype('float') 
         df['low'] = df['low'].astype('float') 
         df["EMA5"] = tb.ema(df["close"],5)
-        df["EMA8"] = tb.ema(df["close"],8)
-        calculate_fib(df,13)
+        df["EMA8"] = tb.ema(df["close"],8)        
+        df["FIB_1"] = calculate_fib(df,13, 1)
+        df["FIB_0_500"] = calculate_fib(df,13, 0.5)
+        df["FIB_0"] = calculate_fib(df,13, 0)  
 
-        long_signal = df["EMA5"][limit-2] > df["EMA8"][limit-2]
-        short_signal = df["EMA5"][limit-2] < df["EMA8"][limit-2]
+        long_signal = df["EMA5"][limit-1] > df["EMA8"][limit-1]
+        short_signal = df["EMA5"][limit-1] < df["EMA8"][limit-1]
  
     if (start == True):
         limit = 10
@@ -100,8 +106,8 @@ while (1):
     ### Bandı ve Giriş Bilgilerini Ayarla
     if (position == "") and (start == False) and (long_signal or short_signal):
         start = True
-        referansOrtaFiyat = df["FIB_0_500"][limit-2]
-        startTime =  df["openTime"][limit-2]
+        referansOrtaFiyat = df["FIB_0_500"][limit-1]
+        startTime =  df["openTime"][limit-1]
         altGirisFiyat = referansOrtaFiyat * (1 - girisOrani)
         ustGirisFiyat = referansOrtaFiyat * (1 + girisOrani)
         altCikisFiyat = altGirisFiyat * (1 - cikisOrani)
@@ -119,8 +125,8 @@ while (1):
         debugMsg += "Alt Giriş  : " + str(altGirisFiyat) + "\n"
         debugMsg += "Alt Çıkış  : " + str(altCikisFiyat) + "\n"
         debugMsg += "\n"  
-        debugMsg += "FIB Değerleri -> \nFIB_1.000 : " + str(df["FIB_1"][limit-2]) + "\nFIB_0.500 : " + str(df["FIB_0_500"][limit-2]) + "\nFIB_0.000 : " + str(df["FIB_0"][limit-2]) + "\n"    
-        debugMsg += "EMA5 -> " + str(df["EMA5"][limit-2]) + "\nEMA8 -> " + str(df["EMA8"][limit-2]) + "\n"
+        debugMsg += "FIB Değerleri -> \nFIB_1.000 : " + str(df["FIB_1"][limit-1]) + "\nFIB_0.500 : " + str(df["FIB_0_500"][limit-1]) + "\nFIB_0.000 : " + str(df["FIB_0"][limit-1]) + "\n"    
+        debugMsg += "EMA5 -> " + str(df["EMA5"][limit-1]) + "\nEMA8 -> " + str(df["EMA8"][limit-1]) + "\n"
         debugMsg += "\n"  
 
     if start and (df["high"][limit-1] >= ustGirisFiyat and ustGirisFiyat >= df["low"][limit-1]) and islemSayisi < maxPozisyonSayisi and position != "Long" and long_signal: #long gir
@@ -231,8 +237,9 @@ while (1):
         lastDebugMsg = ""
         lastDebugMsg += "\n"
         lastDebugMsg += "****************************************\n"
-        lastDebugMsg += "Strateji -> EMA 5 Close  / EMA 8 Close Signal\n" 
-        lastDebugMsg += "EMA 5 > EMA 8 = BUY -  EMA 5 < EMA 8 = SELL - Fibonacci 13\n"
+        lastDebugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
+        lastDebugMsg += "Strateji -> EMA 5 Close  / EMA 8 Close Signal / Fibonacci 13\n" 
+        lastDebugMsg += "EMA 5 > EMA 8 = BUY -  EMA 5 < EMA 8 = SELL\n"
         lastDebugMsg += "İşleme Giriş Bant Genişliği  : % " + str(bantReferans*100) + "\n"
         lastDebugMsg += "Başlangıç Para($)            : " + str(baslangicPara) + "\n"
         lastDebugMsg += "Kar($)                       : " + str(cuzdan - baslangicPara) + "\n"
