@@ -23,7 +23,7 @@ for i in range (maxPozisyonSayisi + 1):
 
 pozisyonİslemFiyatları = 0
 pozisyonBuyuklugu = 0
-bantMinimumOran = 0.0025
+bantMinimumOran = 0.002
 bantReferans = 0
 cikisOrani = 3 * bantReferans
 girisOrani = bantReferans / 2
@@ -38,7 +38,7 @@ pozisyonAdetSayaci = arr.array('i', [0,0,0,0,0,0,0,0,0])
 #ATTRIBUTES
 fee = 0.0004 # percent
 position = ""
-baslangicPara = 100
+baslangicPara = 111
 cuzdan = baslangicPara
 
 startTime = 0
@@ -52,10 +52,10 @@ emaSell = 3
 toplamIslemSayisi = 0
 islemSayisi = 0
 
-coin = "MTLUSDT"
+coin = "SOLUSDT"
 timeFrame = "15m"
-csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
-#csvName = coin + "_" + timeFrame + ".csv"
+#csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
+csvName = coin + "_" + timeFrame + ".csv"
 logFileName = "LogFile_" +  coin + "_" + timeFrame + ".txt"
 
 if os.path.isfile(logFileName):
@@ -244,6 +244,7 @@ lastDebugMsg += "****************************************\n"
 lastDebugMsg += "Pozisyon Ağırlıkları\n" 
 lastDebugMsg += "Toplam İşlem Adet          : " + str(toplamIslemSayisi) + "\n"
 lastDebugMsg += "1 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[1]) + "\tOran : %" + str(pozisyonAdetSayaci[1] / toplamIslemSayisi * 100) + "\n"
+'''
 lastDebugMsg += "2 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[2]) + "\t\tOran : %" + str(pozisyonAdetSayaci[2] / toplamIslemSayisi * 100) + "\n"
 lastDebugMsg += "3 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[3]) + "\t\tOran : %" + str(pozisyonAdetSayaci[3] / toplamIslemSayisi * 100) + "\n"
 lastDebugMsg += "4 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[4]) + "\t\tOran : %" + str(pozisyonAdetSayaci[4] / toplamIslemSayisi * 100) + "\n"
@@ -251,6 +252,7 @@ lastDebugMsg += "5 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[5]) +
 lastDebugMsg += "6 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[6]) + "\t\tOran : %" + str(pozisyonAdetSayaci[6] / toplamIslemSayisi * 100) + "\n"
 lastDebugMsg += "7 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[7]) + "\t\tOran : %" + str(pozisyonAdetSayaci[7] / toplamIslemSayisi * 100) + "\n"
 lastDebugMsg += "8 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[8]) + "\t\tOran : %" + str(pozisyonAdetSayaci[8] / toplamIslemSayisi * 100) + "\n"
+'''
 lastDebugMsg += "****************************************\n"
 
 print(lastDebugMsg)

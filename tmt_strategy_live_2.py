@@ -44,7 +44,7 @@ pozisyonAdetSayaci = arr.array('i', [0,0,0,0,0,0,0,0,0])
 #ATTRIBUTES
 fee = 0.0004 # percent
 position = ""
-baslangicPara = 1000
+baslangicPara = 111
 cuzdan = baslangicPara
 
 startTime = 0
@@ -242,8 +242,7 @@ while (1):
         debugMsg += "Toplam İşlem Sayısı  : " + str(islemSayisi) + "\n"
         debugMsg += "İşlem Kazancı        : " + str(kumulatifKar) + "\n"
         debugMsg += "---------------------------------------\n"           
-        send_message(debugMsg)
-        debugMsg = ""
+        debugMsg += "\n"
 
         start = False     
         position = ""
@@ -256,37 +255,39 @@ while (1):
             debugMsg = ""
             quit()   
      
-        lastDebugMsg = ""
-        lastDebugMsg += "\n"
-        lastDebugMsg += "****************************************\n"
-        lastDebugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-        lastDebugMsg += "Strateji -> EMA" + str(emaBuy) +  " Close / EMA" + str(emaSell) + " Close Signal\n" 
-        lastDebugMsg += "Fibonacci -> " + str(fibPeriod) + "\n"
-        lastDebugMsg += "İşlem Bandı Minimum          : %" + str(bantMinimumOran * 100) + "\n"
-        lastDebugMsg += "Başlangıç Para($)            : " + str(baslangicPara) + "\n"
-        lastDebugMsg += "Kar($)                       : " + str(cuzdan - baslangicPara) + "\n"
-        lastDebugMsg += "Son Para($)                  : " + str(cuzdan) + "\n"
-        lastDebugMsg += "Kazanç                       : % " + str(((cuzdan - baslangicPara) / baslangicPara) * 100) + "\n"
-        lastDebugMsg += "Kaldıraç                     : " + str(kaldirac) + "x\n"
-        lastDebugMsg += "Maks Pozisyon Sayısı         : " + str(maxPozisyonSayisi) + "\n"
-        lastDebugMsg += "****************************************\n"
-        lastDebugMsg += "Pozisyon Ağırlıkları\n" 
-        lastDebugMsg += "Toplam İşlem Adet          : " + str(toplamIslemSayisi) + "\n"
-        lastDebugMsg += "1 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[1]) + "\t Oran : %" + str(pozisyonAdetSayaci[1] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "2 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[2]) + "\t Oran : %" + str(pozisyonAdetSayaci[2] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "3 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[3]) + "\t Oran : %" + str(pozisyonAdetSayaci[3] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "4 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[4]) + "\t Oran : %" + str(pozisyonAdetSayaci[4] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "5 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[5]) + "\t Oran : %" + str(pozisyonAdetSayaci[5] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "6 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[6]) + "\t Oran : %" + str(pozisyonAdetSayaci[6] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "7 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[7]) + "\t Oran : %" + str(pozisyonAdetSayaci[7] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "8 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[8]) + "\t Oran : %" + str(pozisyonAdetSayaci[8] / toplamIslemSayisi * 100) + "\n"
-        lastDebugMsg += "****************************************\n"
-        send_message(lastDebugMsg)
+        debugMsg += "\n"
+        debugMsg += "****************************************\n"
+        debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
+        debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Close / EMA" + str(emaSell) + " Close Signal\n" 
+        debugMsg += "Fibonacci -> " + str(fibPeriod) + "\n"
+        debugMsg += "İşlem Bandı Minimum          : %" + str(bantMinimumOran * 100) + "\n"
+        debugMsg += "Başlangıç Para($)            : " + str(baslangicPara) + "\n"
+        debugMsg += "Kar($)                       : " + str(cuzdan - baslangicPara) + "\n"
+        debugMsg += "Son Para($)                  : " + str(cuzdan) + "\n"
+        debugMsg += "Kazanç                       : % " + str(((cuzdan - baslangicPara) / baslangicPara) * 100) + "\n"
+        debugMsg += "Kaldıraç                     : " + str(kaldirac) + "x\n"
+        debugMsg += "Maks Pozisyon Sayısı         : " + str(maxPozisyonSayisi) + "\n"
+        debugMsg += "****************************************\n"
+        debugMsg += "Pozisyon Ağırlıkları\n" 
+        debugMsg += "Toplam İşlem Adet          : " + str(toplamIslemSayisi) + "\n"
+        debugMsg += "1 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[1]) + "\t Oran : %" + str(pozisyonAdetSayaci[1] / toplamIslemSayisi * 100) + "\n"
+        '''
+        debugMsg += "2 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[2]) + "\t Oran : %" + str(pozisyonAdetSayaci[2] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "3 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[3]) + "\t Oran : %" + str(pozisyonAdetSayaci[3] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "4 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[4]) + "\t Oran : %" + str(pozisyonAdetSayaci[4] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "5 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[5]) + "\t Oran : %" + str(pozisyonAdetSayaci[5] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "6 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[6]) + "\t Oran : %" + str(pozisyonAdetSayaci[6] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "7 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[7]) + "\t Oran : %" + str(pozisyonAdetSayaci[7] / toplamIslemSayisi * 100) + "\n"
+        debugMsg += "8 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[8]) + "\t Oran : %" + str(pozisyonAdetSayaci[8] / toplamIslemSayisi * 100) + "\n"
+        '''
+        debugMsg += "****************************************\n"
+        send_message(debugMsg)
+        debugMsg = ""
 
         # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
         # Wait 1 second until we are synced up with the 'every 15 minutes' clock            
         #while datetime.now().minute not in {0, 15, 30, 45}: 
-        while datetime.now().minute % 5 != 0: 
-            time.sleep(5)
+        while datetime.now().minute % 15 != 0: 
+            time.sleep(10)
 
     time.sleep(10)   
