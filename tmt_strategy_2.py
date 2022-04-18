@@ -9,6 +9,7 @@ import csv
 import os
 from Indicators.fibonacci_retracement import calculate_fib
 import array as arr
+from datetime import timedelta
 
 kaldirac = 1
 start = False
@@ -50,6 +51,7 @@ emaSell = 3
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
+toplamKarliIslemSayisi = 0
 islemSayisi = 0
 
 coin = "MTLUSDT"
@@ -71,8 +73,8 @@ df['open'] = df['open'].astype('float')
 df['close'] = df['close'].astype('float')
 df['high'] = df['high'].astype('float')
 df['low'] = df['low'].astype('float')
-df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms")
-df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms")
+df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
+df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
 df["EMABUY"] = tb.ema(df["close"],emaBuy)
 df["EMASELL"] = tb.ema(df["close"],emaSell)
 df["FIB_1"] = calculate_fib(df,fibVal, 1)
@@ -110,12 +112,12 @@ for i in range(df.shape[0]):
                 debugMsg += str(toplamIslemSayisi + 1) + ". İşlem Sinyali Geldi\n"
                 debugMsg += "\n"  
                 debugMsg += "Al-Sat Bant Aralığı ->\n"
-                debugMsg += "İşlem Bant Aralığı  : %" + str(bantReferans * 100) + "\n"
-                debugMsg += "Üst Çıkış           : " + str(ustCikisFiyat) + "\n"
-                debugMsg += "Üst Giriş           : " + str(ustGirisFiyat) + "\n"
-                debugMsg += "Referans Orta Fiyat : " + str(referansOrtaFiyat) + "\n"
-                debugMsg += "Alt Giriş           : " + str(altGirisFiyat) + "\n"
-                debugMsg += "Alt Çıkış           : " + str(altCikisFiyat) + "\n"
+                debugMsg += "İşlem Bant Aralığı\t: % " + str(bantReferans * 100) + "\n"
+                debugMsg += "Üst Çıkış\t: " + str(ustCikisFiyat) + "\n"
+                debugMsg += "Üst Giriş\t: " + str(ustGirisFiyat) + "\n"
+                debugMsg += "Referans\t: " + str(referansOrtaFiyat) + "\n"
+                debugMsg += "Alt Giriş\t: " + str(altGirisFiyat) + "\n"
+                debugMsg += "Alt Çıkış\t: " + str(altCikisFiyat) + "\n"
                 debugMsg += "\n"  
                 debugMsg += "FIB Değerleri -> \n"
                 debugMsg += "FIB_1_000 : " + str(df["FIB_1"][i]) + "\n"
@@ -134,9 +136,9 @@ for i in range(df.shape[0]):
             islemSirasi[islemSayisi] = "Long"
             position = "Long"     
             debugMsg += str(islemSayisi) + ".Pozisyon " + str(position) + "\n"
-            debugMsg += "İşlem Mum Zamanı : " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Fiyatı     : " + str(ustGirisFiyat) + "\n"
-            debugMsg += "İşlem Büyüklüğü  : " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
+            debugMsg += "İşlem Zamanı\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "İşlem Fiyatı\t: " + str(ustGirisFiyat) + "\n"
+            debugMsg += "İşlem Büyüklüğü\t: " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
             debugMsg += "\n"  
 
         if start and (df["low"][i] <= altGirisFiyat and altGirisFiyat <= df["high"][i]) and islemSayisi < maxPozisyonSayisi and position != "Short" and short_signal: #short gir
@@ -145,9 +147,9 @@ for i in range(df.shape[0]):
             islemSirasi[islemSayisi] = "Short"
             position = "Short"            
             debugMsg += str(islemSayisi) + ".Pozisyon : " + str(position) + "\n"
-            debugMsg += "İşlem Mum Zamanı : " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Fiyatı     : " + str(altGirisFiyat) + "\n"
-            debugMsg += "İşlem Büyüklüğü  : " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
+            debugMsg += "İşlem Zamanı\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "İşlem Fiyatı\t: " + str(altGirisFiyat) + "\n"
+            debugMsg += "İşlem Büyüklüğü\t: " + str(pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * kaldirac) + "\n"
             debugMsg += "\n"  
 
         if start and (df["high"][i] >= ustCikisFiyat or df["low"][i] <= altCikisFiyat) and (position != ""): # tüm islemleri kapat
@@ -156,10 +158,8 @@ for i in range(df.shape[0]):
             pozisyonAdetSayaci[islemSayisi] = pozisyonAdetSayaci[islemSayisi] + 1
 
             if (df["high"][i] >= ustCikisFiyat): #Üst bantta kapatıyoruz
-
                 debugMsg += "Long Yön İşlem Hedefi Geldi.\nTüm İşlemler Üst Hedef Bantta Kapatılıyor.\n"
                 debugMsg += "İşlem Kapatma Fiyatı : " + str(ustCikisFiyat) + "\n"
-
                 if islemSirasi[1] == "Long": # karlı yönde kapattık
                     counter = 1
                     while counter <= islemSayisi:
@@ -182,10 +182,8 @@ for i in range(df.shape[0]):
                         counter = counter + 1
 
             elif (df["low"][i] <= altCikisFiyat): #Alt bantta kapatıyoruz
-
                 debugMsg += "Short Yön İşlem Hedefi Geldi.\nTüm İşlemler Alt Hedef Bantta Kapatılıyor.\n"
                 debugMsg += "İşlem Kapatma Fiyatı : " + str(altCikisFiyat) + "\n"
-
                 if islemSirasi[1] == "Long": # batmadık ama az kar ettik 
                     counter = 1
                     while counter <= islemSayisi:
@@ -207,13 +205,16 @@ for i in range(df.shape[0]):
                             cuzdan = cuzdan - (pozisyonBuyuklugu * martingaleKatsayilar[islemSayisi] * (1-cikisOrani) * fee * kaldirac)     
                         counter = counter + 1
             
+            if (kumulatifKar > 0):
+                toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
+
             cuzdan = cuzdan + kumulatifKar   
 
             debugMsg += "\n"
-            debugMsg += "Başlangıç Mum Zamanı : " + str(startTime) + "\n"
-            debugMsg += "Bitiş Mum Zamanı     : " + str(stopTime) + "\n"
-            debugMsg += "Toplam İşlem Sayısı  : " + str(islemSayisi) + "\n"
-            debugMsg += "İşlem Kazancı($)     : " + str(kumulatifKar) + "\n"
+            debugMsg += "Başlangıç Mum Zamanı\t: " + str(startTime) + "\n"
+            debugMsg += "Bitiş Mum Zamanı\t\t: " + str(stopTime) + "\n"
+            debugMsg += "Toplam İşlem Sayısı\t\t: " + str(islemSayisi) + "\n"
+            debugMsg += "İşlem Kazancı($)\t\t: " + str(kumulatifKar) + "\n"
             debugMsg += "---------------------------------------\n"           
             #print(debugMsg)    
             logFileObject.write(debugMsg)
@@ -227,34 +228,28 @@ for i in range(df.shape[0]):
             print("PARA BITTI")
             quit()   
      
-lastDebugMsg = ""
-lastDebugMsg += "\n"
-lastDebugMsg += "****************************************\n"
-lastDebugMsg += "Parite : " + coin + "\nZaman Dilimi : " + timeFrame + "\n"
-lastDebugMsg += "Strateji -> EMA" + str(emaBuy) +  " Close / EMA" + str(emaSell) + " Close Signal\n" 
-lastDebugMsg += "Fibonacci -> " + str(fibVal) + "\n"
-lastDebugMsg += "İşlem Bandı Minimum          : %" + str(bantMinimumOran * 100) + "\n"
-lastDebugMsg += "Başlangıç Para($)            : " + str(baslangicPara) + "\n"
-lastDebugMsg += "Kar($)                       : " + str(cuzdan - baslangicPara) + "\n"
-lastDebugMsg += "Son Para($)                  : " + str(cuzdan) + "\n"
-lastDebugMsg += "Kazanç                       : % " + str(((cuzdan - baslangicPara) / baslangicPara) * 100) + "\n"
-lastDebugMsg += "Kaldıraç                     : " + str(kaldirac) + "x\n"
-lastDebugMsg += "Maks Pozisyon Sayısı         : " + str(maxPozisyonSayisi) + "\n"
-lastDebugMsg += "****************************************\n"
-lastDebugMsg += "Pozisyon Ağırlıkları\n" 
-lastDebugMsg += "Toplam İşlem Adet          : " + str(toplamIslemSayisi) + "\n"
-lastDebugMsg += "1 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[1]) + "\tOran : %" + str(pozisyonAdetSayaci[1] / toplamIslemSayisi * 100) + "\n"
-'''
-lastDebugMsg += "2 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[2]) + "\t\tOran : %" + str(pozisyonAdetSayaci[2] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "3 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[3]) + "\t\tOran : %" + str(pozisyonAdetSayaci[3] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "4 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[4]) + "\t\tOran : %" + str(pozisyonAdetSayaci[4] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "5 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[5]) + "\t\tOran : %" + str(pozisyonAdetSayaci[5] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "6 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[6]) + "\t\tOran : %" + str(pozisyonAdetSayaci[6] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "7 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[7]) + "\t\tOran : %" + str(pozisyonAdetSayaci[7] / toplamIslemSayisi * 100) + "\n"
-lastDebugMsg += "8 Pozisyonla Kapanan İşlem : " + str(pozisyonAdetSayaci[8]) + "\t\tOran : %" + str(pozisyonAdetSayaci[8] / toplamIslemSayisi * 100) + "\n"
-'''
-lastDebugMsg += "****************************************\n"
+debugMsg = ""
+debugMsg += "\n"
+debugMsg += "****************************************\n"
+debugMsg += "Parite : " + coin + "\nZaman Dilimi : " + timeFrame + "\n"
+debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Close / EMA" + str(emaSell) + " Close Signal\n" 
+debugMsg += "Fibonacci -> " + str(fibVal) + "\n"
+debugMsg += "İşlem Bandı Minimum\t: % " + str(bantMinimumOran * 100) + "\n"
+debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
+debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
+debugMsg += "Son Para($)\t\t: " + str(cuzdan) + "\n"
+debugMsg += "Kazanç\t\t\t: % " + str(((cuzdan - baslangicPara) / baslangicPara) * 100) + "\n"
+debugMsg += "Kaldıraç\t\t: " + str(kaldirac) + "x\n"
+debugMsg += "Maks Pozisyon Sayısı\t: " + str(maxPozisyonSayisi) + "\n"
+debugMsg += "****************************************\n"
+debugMsg += "Pozisyon Ağırlıkları\n" 
+debugMsg += "Toplam İşlem Adet\t\t: " + str(toplamIslemSayisi) + "\n"
+debugMsg += "Kar İşlem Adet\t\t\t: " + str(toplamKarliIslemSayisi) + "\n"
+debugMsg += "Kar Başarı Oranı\t\t: % " + str((toplamKarliIslemSayisi / toplamIslemSayisi) * 100) + "\n"
+for i in range(maxPozisyonSayisi):
+    debugMsg += str(i+1) + " Pozisyonla Kapanan İşlem\t: " + str(pozisyonAdetSayaci[i+1]) + "  Oran : % " + str(pozisyonAdetSayaci[i+1] / toplamIslemSayisi * 100) + "\n"
+debugMsg += "****************************************\n"
 
-print(lastDebugMsg)
-logFileObject.write(lastDebugMsg)
+print(debugMsg)
+logFileObject.write(debugMsg)
 logFileObject.close()
