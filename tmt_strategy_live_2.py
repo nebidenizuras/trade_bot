@@ -64,7 +64,7 @@ islemSayisi = 0
 timeFrame = 15
 interval = '15m' 
 limit = 10
-symbol = "MTLUSDT"
+symbol = "GMTUSDT"
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
       'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
