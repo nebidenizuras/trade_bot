@@ -127,13 +127,14 @@ while (1):
         
         cikisOrani = 3 * bantReferans
         girisOrani = bantReferans / 2
-        altGirisFiyat = referansOrtaFiyat * (1 - girisOrani)
-        ustGirisFiyat = referansOrtaFiyat * (1 + girisOrani)
+        altGirisFiyat = referansOrtaFiyat * (1 + girisOrani)
+        ustGirisFiyat = referansOrtaFiyat * (1 - girisOrani)
         altCikisFiyat = altGirisFiyat * (1 - cikisOrani)
         ustCikisFiyat = ustGirisFiyat * (1 + cikisOrani)
         pozisyonBuyuklugu = cuzdan / katSayilarToplami
 
         debugMsg = "Sinyal Oluştu ->\n" + str(symbol) + " " + str(interval) + "\n"
+        debugMsg += "TERS İŞLEM\n"
         debugMsg += "Güncel Cüzdan($) : " + str(cuzdan) + "\n" 
         debugMsg += "---------------------------------------\n" 
         debugMsg += str(toplamIslemSayisi + 1) + ". İşlem Sinyali Geldi\n" 
@@ -260,6 +261,7 @@ while (1):
      
         debugMsg += "\n"
         debugMsg += "****************************************\n"
+        debugMsg += "TERS İŞLEM\n"
         debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
         debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Close / EMA" + str(emaSell) + " Close Signal\n" 
         debugMsg += "Fibonacci -> " + str(fibPeriod) + "\n"
