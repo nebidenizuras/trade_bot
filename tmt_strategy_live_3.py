@@ -25,7 +25,7 @@ islemBuyuklugu = 0
 #ATTRIBUTES
 kaldirac = 1
 feeOranı = 0.0004 # percent
-karOrani = 0.005 # percent
+karOrani = 0.003 # percent
 
 baslangicPara = 111
 cuzdan = baslangicPara
@@ -53,9 +53,9 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "GMTUSDT"
+symbol = "CRVUSDT"
 interval = "15m"
-limit = emaSignal + 2
+limit = 2 * emaSignal
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
       'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -178,7 +178,7 @@ while(True):
         toplamFee += islemFee
         position = "Short"    
         islemFiyatı = df["close"][limit-1]
-        hedefFiyatı = islemFiyatı * (1 + karOrani)
+        hedefFiyatı = islemFiyatı * (1 - karOrani)
         islemBuyuklugu = cuzdan * kaldirac
         debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyatı) + "\n"
