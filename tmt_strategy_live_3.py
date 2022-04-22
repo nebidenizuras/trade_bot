@@ -6,7 +6,6 @@
 '''
 
 from operator import index
-import pandas_ta as tb
 import array as arr
 from binance.client import Client  
 import pandas as pd 
@@ -15,6 +14,7 @@ import time
 from telegram_bot import send_message_TMT_TestNet2, warn
 from datetime import datetime 
 from datetime import timedelta
+from ta.trend import ema_indicator
 
 client = Client(key_id, secret_key_id) 
 
@@ -43,8 +43,8 @@ stopTime = 0
 islemBitti = False
 
 # Sinyal Değerleri
-emaBuy = 3
-emaSell = 5
+emaBuy = 2
+emaSell = 3
 emaSignal = 7
 
 # Order Amount Calculation
@@ -89,9 +89,9 @@ while(True):
     df['low'] = df['low'].astype('float')
     df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
     df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
-    df["EMABUY"] = tb.ema(df["open"],emaBuy)
-    df["EMASELL"] = tb.ema(df["open"],emaSell)
-    df["EMASIGNAL"] = tb.ema(df["open"],emaSignal)
+    df["EMABUY"] = ema_indicator(df["open"],emaBuy)
+    df["EMASELL"] = ema_indicator(df["open"],emaSell)
+    df["EMASIGNAL"] = ema_indicator(df["open"],emaSignal)     
 
     long_signal = (df["EMABUY"][limit-1] > df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["close"][limit-1] >= df["EMASIGNAL"][limit-1])
     short_signal = (df["EMABUY"][limit-1] < df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] < df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] < df["EMASIGNAL"][limit-1]) and (df["close"][limit-1] <= df["EMASIGNAL"][limit-1])       
@@ -236,6 +236,7 @@ while(True):
     if islemBitti == True:     
         debugMsg += "\n"
         debugMsg += "****************************************\n"
+        debugMsg += "GENEL ÖZET\n"
         debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
         debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Open / EMA" + str(emaSignal) + " Open\n"
         debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
