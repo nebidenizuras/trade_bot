@@ -45,7 +45,7 @@ islemBitti = False
 # Sinyal Değerleri
 emaBuy = 3
 emaSell = 5
-emaSignal = 13
+emaSignal = 7
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
@@ -63,6 +63,7 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
 
 
 startMsg = warn + warn + warn + "\n"
+startMsg += "TMT Robot Çalışmaya Başladı\n"
 startMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
 startMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Open / EMA" + str(emaSignal) + " Open\n"
 startMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
