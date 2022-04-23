@@ -54,7 +54,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "RAYUSDT"
+symbol = "MTLUSDT"
 interval = "15m"
 limit = emaSignal + 10
 
@@ -66,7 +66,7 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
 startMsg = warn + warn + warn + "\n"
 startMsg += "TMT Robot Çalışmaya Başladı\n"
 startMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-startMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Open / EMA" + str(emaSignal) + " Open\n"
+startMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Close / EMA" + str(emaSignal) + " Open\n"
 startMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
 startMsg += "Hedef Kar Oranı\t\t: % " + str(karOrani * 100) + "\n"
 startMsg += warn + warn + warn
@@ -90,8 +90,8 @@ while(True):
     df['low'] = df['low'].astype('float')
     df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
     df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
-    df["EMABUY"] = ema_indicator(df["open"],emaBuy)
-    df["EMASELL"] = ema_indicator(df["close"],emaSell)
+    df["EMABUY"] = ema_indicator(df["close"],emaBuy)
+    df["EMASELL"] = ema_indicator(df["open"],emaSell)
     df["EMASIGNAL"] = ema_indicator(df["open"],emaSignal)     
 
     long_signal = (df["EMABUY"][limit-1] > df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] > df["EMASIGNAL"][limit-1]) #and (df["close"][limit-1] >= df["EMASIGNAL"][limit-1])
@@ -239,7 +239,7 @@ while(True):
         debugMsg += "****************************************\n"
         debugMsg += "GENEL ÖZET\n"
         debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-        debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Open / EMA" + str(emaSignal) + " Open\n"
+        debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Close / EMA" + str(emaSignal) + " Open\n"
         debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
         debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
         debugMsg += "Toplam Ödenen Fee($)\t: " + str(toplamFee) + "\n"
