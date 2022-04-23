@@ -2,6 +2,7 @@ from operator import index
 import array as arr
 from binance.client import Client  
 import pandas as pd 
+import pandas_ta as tb
 import user_api_key 
 import time   
 from telegram_bot import send_message_tarama, warn
@@ -13,13 +14,13 @@ from data_manager import get_symbol_list
 client = Client(user_api_key.key_id,user_api_key.secret_key_id) 
 
 # Teknik Analiz
-rsiPeriod = 13
+rsiPeriod = 12
 
 # Parite Bilgileri
-timeFrame = 60
-interval = '1h' 
+timeFrame = 5
+interval = '5m' 
 symbol = ""
-limit = rsiPeriod * 2
+limit = rsiPeriod * 3
 
 symbolListFuture = get_symbol_list("USDT", "Future")
 symbolListSpot = get_symbol_list("USDT", "Spot")
@@ -60,12 +61,13 @@ def calculate_hype_point(market):
         df['open'] = df['open'].astype('float') 
         df['close'] = df['close'].astype('float')          
         df['low'] = df['low'].astype('float')
-        rsi = RSIIndicator(df["high"],rsiPeriod)
-        df["RSI"] = rsi.rsi()
+        df["RSI"] = tb.rsi(df["close"],rsiPeriod)
         
         candleTime = df['openTime'][limit-2]
-        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) * abs(df['RSI'][limit-2] - 50)
-        rateList.append(hypeRate)
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50)
+        hypeRate = round(hypeRate,3)
+        hypeRateStr = str(hypeRate).zfill(7)
+        rateList.append(hypeRateStr)
 
     searchList = dict(zip(symbolList, rateList))
     searchListOrdered = dict(sorted(searchList.items(),key=lambda x:x[1],reverse = True)) # ascending order
@@ -73,9 +75,8 @@ def calculate_hype_point(market):
     debugMsg = warn + " " + market + " Coin Liste Taraması (" + interval + ")\n\n"
     debugMsg += "Hesaplanan Mum Zamanı : " + str(candleTime) + "\n\n"
 
-    counter = 0
     for i in searchListOrdered:
-        debugMsg += str(i) + " : " + str(round(searchListOrdered[i], 3)) + "\n"       
+        debugMsg += str(i) + " : " + str(searchListOrdered[i]) + "\n"       
 
     send_message_tarama(debugMsg)
     debugMsg = ""
@@ -85,9 +86,10 @@ def calculate_hype_point(market):
     symbolListSpot = get_symbol_list("USDT", "Spot")
 
     # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
-    # Wait 1 second until we are synced up with the 'every 1 hour' clock            
-    while datetime.now().minute not in {1}: 
-        time.sleep(1)
+    # Wait 1 second until we are synced up with the 'every 1 hour' clock  
+    while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
+    #while datetime.now().minute % timeFrame != 0: 
+        time.sleep(5)         
 
 while (1):
     calculate_hype_point("Future")

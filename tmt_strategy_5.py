@@ -4,6 +4,7 @@
   FIB 0.772 de kar alırım
 - EMA8 değeri FIB 0.5 altında ise, short işleme değmişsem short girerim (FIB 0.428)
   FIB 0.228 de kar alırım
+- Stop noktaları diğer yön işlemin açıldığı yer ve eması 0.5'e uyumlu ise
 '''
 
 from operator import index
@@ -54,14 +55,14 @@ startTime = 0
 stopTime = 0
 
 fibVal = 8
-emaVal = 5
+emaVal = 8
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-coin = "APEUSDT"
+coin = "AVAXUSDT"
 timeFrame = "15m"
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = coin + "_" + timeFrame + ".csv"
@@ -148,7 +149,7 @@ for i in range(df.shape[0]):
             position = "Long"  
             islemFiyati = longGirisFiyat
             hedefFiyati = longKarFiyat
-            stopFiyatı = longStopFiyat
+            stopFiyatı = shortGirisFiyat
             islemBuyuklugu = cuzdan * kaldirac
             karOrani = (longKarFiyat / longGirisFiyat) - 1 
             debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
@@ -178,7 +179,7 @@ for i in range(df.shape[0]):
             logFileObject.write(debugMsg)
 
         # LONG Stop Ol
-        if start and (df["low"][i] <= stopFiyatı) and position == "Long":
+        if start and (df["low"][i] <= stopFiyatı) and position == "Long" and short_signal:
             islemKar = cuzdan * (((stopFiyatı - islemFiyati) / islemFiyati)) * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
@@ -207,15 +208,14 @@ for i in range(df.shape[0]):
             position = "Short"  
             islemFiyati = shortGirisFiyat
             hedefFiyati = shortKarFiyat
-            stopFiyatı = shortStopFiyat
+            stopFiyatı = longGirisFiyat
             islemBuyuklugu = cuzdan * kaldirac
             karOrani = (shortGirisFiyat / shortKarFiyat) - 1 
             debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
             debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
             debugMsg += "İşlem Giriş Büyüklüğü\t: " + str(islemBuyuklugu) + "\n"
             debugMsg += "İşlem Giriş Fee\t: " + str(islemFee) + "\n"
-            debugMsg += "\n"
-            
+            debugMsg += "\n"            
 
         # SHORT Kar Al
         if start and (df["low"][i] <= hedefFiyati) and position == "Short":
@@ -238,7 +238,7 @@ for i in range(df.shape[0]):
             logFileObject.write(debugMsg)
 
         # SHORT Stop Ol
-        if start and (df["high"][i] >= stopFiyatı) and position == "Short":
+        if start and (df["high"][i] >= stopFiyatı) and position == "Short" and long_signal:
             islemKar = cuzdan * (((islemFiyati - stopFiyatı) / islemFiyati)) * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
@@ -274,6 +274,7 @@ for i in range(df.shape[0]):
 debugMsg = ""
 debugMsg += "\n"
 debugMsg += "****************************************\n"
+debugMsg += "TMT Strategy 5\n"
 debugMsg += "Parite : " + coin + "\nZaman Dilimi : " + timeFrame + "\n"
 debugMsg += "Strateji -> EMA" + str(emaVal) + " Close Signal\n" 
 debugMsg += "Fibonacci -> " + str(fibVal) + "\n"
