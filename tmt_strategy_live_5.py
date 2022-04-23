@@ -74,7 +74,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "APEUSDT"
+symbol = "MTLUSDT"
 interval = "15m"
 limit = fibVal + 2
 
@@ -85,6 +85,7 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
 
 startMsg = warn + warn + warn + "\n"
 startMsg += "TMT Robot Çalışmaya Başladı\n"
+startMsg += "TMT Strateji 5\n"
 startMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
 startMsg += "Strateji -> EMA" + str(emaVal) +  " Close / Fib " + str(fibVal) + "\n"
 startMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
