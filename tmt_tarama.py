@@ -64,7 +64,7 @@ def calculate_hype_point(market):
         df["RSI"] = rsi.rsi()
         
         candleTime = df['openTime'][limit-2]
-        hypeRate = (df['high'][limit-2] - df['low'][limit-2]) * abs(df['RSI'][limit-2] - 50)
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) * abs(df['RSI'][limit-2] - 50)
         rateList.append(hypeRate)
 
     searchList = dict(zip(symbolList, rateList))
