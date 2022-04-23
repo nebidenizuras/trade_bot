@@ -45,7 +45,7 @@ islemBitti = False
 # Sinyal Değerleri
 emaBuy = 2
 emaSell = 3
-emaSignal = 7
+emaSignal = 8
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
@@ -54,7 +54,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 symbol = "CRVUSDT"
-interval = "15m"
+interval = "30m"
 limit = 2 * emaSignal
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
