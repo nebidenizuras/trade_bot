@@ -77,7 +77,7 @@ while(True):
     short_signal = False
     islemBitti = False
     limit = emaSignal + 2
-    candles = client.get_klines(symbol=symbol, interval=interval, limit=limit) 
+    candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit) 
     df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                         'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
                                         'taker_buy_quote_asset_volume', 'ignore']) 

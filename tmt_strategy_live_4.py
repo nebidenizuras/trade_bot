@@ -136,6 +136,9 @@ while(True):
         df['close'] = df['close'].astype('float') 
         df['high'] = df['high'].astype('float') 
         df['low'] = df['low'].astype('float') 
+        df["EMA"] = ema_indicator(df["close"],emaVal)
+        long_signal = df["EMA"][limit-1] > df["FIB_0_500"][limit-1]   
+        short_signal = df["EMA"][limit-1] < df["FIB_0_500"][limit-1]
 
     ### Bandı ve Giriş Bilgilerini Ayarla
     if (position == "") and (long_signal or short_signal):
