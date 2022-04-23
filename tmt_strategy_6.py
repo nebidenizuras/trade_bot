@@ -1,8 +1,9 @@
 '''
-- EMA'lar open hesaplanır. 3-5-8 periyotlu 3 ema hesapla
-- 3 5'i aşağı kırdığında 8 altında ise short position
+- EMA'lar open hesaplanır. 2 Open 2 Close 34 Open hesaplanır
+- EMA 2 Open > EMA 2 close ise ve EMA34 long ise long gir
+- EMA 2 Open < EMA 2 close ise ve EMA34 short ise long gir
   8'i yukarı kırdığı anda eğer ema 3-5'de ema 8 üzeri ise stop ol, yoksa belirli kar al çık yeniden gir.
-- GMT'de çalıştır
+- GMT'de çalışır
 '''
 
 from operator import index
@@ -14,7 +15,7 @@ import os
 from Indicators.fibonacci_retracement import calculate_fib
 import array as arr
 from datetime import timedelta
-
+from data_manager import get_historical_data_symbol
 
 
 islemFiyatı = 0
@@ -35,6 +36,7 @@ islemKar = 0
 toplamFee = 0
 toplamKar = 0
 
+debugMsg = ""
 position = ""
 start = False
 startTime = 0
@@ -42,8 +44,8 @@ stopTime = 0
 
 # Sinyal Değerleri
 emaBuy = 2
-emaSell = 3
-emaSignal = 8
+emaSell = 2
+emaSignal = 34
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
@@ -51,7 +53,10 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 symbol = "MTLUSDT"
-interval = "15m"
+interval = "5m"
+
+#get_historical_data_symbol("Future", symbol, "20 April, 2022", "24 April, 2022", interval)
+
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = symbol + "_" + interval + ".csv"
 logFileName = "LogFile_" +  symbol + "_" + interval + ".txt"
@@ -71,7 +76,7 @@ df['high'] = df['high'].astype('float')
 df['low'] = df['low'].astype('float')
 df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
 df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
-df["EMABUY"] = tb.ema(df["open"],emaBuy)
+df["EMABUY"] = tb.ema(df["close"],emaBuy)
 df["EMASELL"] = tb.ema(df["open"],emaSell)
 df["EMASIGNAL"] = tb.ema(df["open"],emaSignal)
 
@@ -239,7 +244,7 @@ debugMsg = ""
 debugMsg += "\n"
 debugMsg += "****************************************\n"
 debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Open / EMA" + str(emaSignal) + " Open\n"
+debugMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Close / EMA" + str(emaSignal) + " Open\n"
 debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
 debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
 debugMsg += "Toplam Ödenen Fee($)\t: " + str(toplamFee) + "\n"

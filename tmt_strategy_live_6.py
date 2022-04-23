@@ -55,7 +55,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 symbol = "MTLUSDT"
-interval = "15m"
+interval = "5m"
 limit = emaSignal + 10
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
