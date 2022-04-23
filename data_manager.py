@@ -2,6 +2,13 @@ from binance import Client
 import user_api_key
 import csv
 from tqdm import tqdm
+from time import sleep
+
+"""
+# https://www.binance.com/en/landing/data
+# https://github.com/binance/binance-public-data/tree/master/Futures_Order_Book_Download
+# https://github.com/binance/binance-public-data/
+"""
 
 """ 
  ***    Data List   ***
@@ -29,13 +36,8 @@ from tqdm import tqdm
 """
 
 client = Client(user_api_key.key_id, user_api_key.secret_key_id)
-symbolList = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT"]
-timeFrame= client.KLINE_INTERVAL_15MINUTE
 
-startDateOfData = "1 January, 2020"
-endDateOfData = "15 April, 2022"
-
-def historical_data_write_to_file():
+def historical_data_write_to_file(symbol, timeFrame, candlesticks):
     csvFileW = open(symbol + "_" + timeFrame +".csv", "w", newline='')
     klines_writer = csv.writer(csvFileW, delimiter=",")
 
@@ -45,9 +47,37 @@ def historical_data_write_to_file():
     csvFileW.close()
 
 # Get Historical Data
-for symbol in tqdm(symbolList):
-    print("\nStarted Data Downloading...: " + symbol + " " + timeFrame + " Time Frame")
-    candlesticks = client.get_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
-    historical_data_write_to_file()
+def get_historical_data(market):
+    symbolList = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT", "WAVESUSDT"]
+    timeFrame= client.KLINE_INTERVAL_15MINUTE
+    startDateOfData = "1 April, 2022"
+    endDateOfData = "24 April, 2022"
 
-print("Finished Data Downloading...")
+    for symbol in tqdm(symbolList):
+        print("\nStarted Data Downloading...: " + symbol + " " + timeFrame + " Time Frame")
+        
+        if (market == "Spot"):
+            candlesticks = client.get_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
+        elif (market == "Future"):
+            candlesticks = client.futures_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
+        
+        historical_data_write_to_file(symbol, timeFrame, candlesticks)
+
+    print("Finished Data Downloading...")
+
+# Get Symbol Lists of Market (Future or Spot)
+def get_symbol_list(asset, market):    
+    if (market == "Spot"):
+        coins = client.get_exchange_info()
+    elif (market == "Future"):
+        coins = client.futures_exchange_info()
+
+    symbol_list = []
+    for coin in coins['symbols']:
+            if coin['quoteAsset'] == asset:  
+                symbol_list.append(coin["baseAsset"] + asset) 
+    
+    return symbol_list
+
+#get_historical_data("Future")
+#get_symbol_list("USDT", "Spot")
