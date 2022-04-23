@@ -13,13 +13,13 @@ from threading import Thread
 # https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/getUpdates
 
 # Bot ID    : 593917120
-# Grup ID(TMT TestNet)   : -1001542109604
+# Grup ID(TMT TestNet 1) : -1001542109604
 # Grup ID(TMT TestNet 2) : -1001736136361
 # Grup ID(TMT Tarama)    : -1001356226519
  
 message_url = "https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/sendMessage"
 
-def send_message(message): 
+def send_message_TMT_TestNet1(message): 
     #print(message)
     #'''   
     #iş yükü parçacıgı için 
