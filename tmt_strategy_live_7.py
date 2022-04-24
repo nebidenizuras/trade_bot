@@ -87,6 +87,7 @@ symbolListFuture = []
 candleTime = 0
 hypeRate = 0
 searchList = {}
+isYenilemeZamani = False
 
 def calculate_hype_point():
     global symbolListFuture
@@ -128,21 +129,23 @@ def calculate_hype_point():
 
 
 while(True):
-
     # Tarama yap yeni coin varsa bul
-    if (islemBitti == False) and (start == False) and (position == ""):
-        if(datetime.now().minute % taramaTimeFrame == 0):
-            time.sleep(5)
-            calculate_hype_point()
-            symbolNew = list(searchList.items())[0][0]
-            if(symbolNew != symbol):            
-                debugMsg = warn + warn + "\nParite Değişti.\n"
-                debugMsg += "Eski Parite : " + str(symbol) + "\n"
-                debugMsg += "Yeni Parite : " + str(symbolNew) + "\n"
-                debugMsg += warn + warn
-                send_message_TMT_TestNet0(debugMsg)
-                debugMsg = "" 
-                symbol = symbolNew
+    if(datetime.now().minute % taramaTimeFrame == 0):
+        isYenilemeZamani = True
+
+    if (islemBitti == False) and (start == False) and (position == "") and (isYenilemeZamani == True):            
+        time.sleep(5)
+        calculate_hype_point()
+        symbolNew = list(searchList.items())[0][0]
+        if(symbolNew != symbol):            
+            debugMsg = warn + warn + "\nParite Değişti.\n"
+            debugMsg += "Eski Parite : " + str(symbol) + "\n"
+            debugMsg += "Yeni Parite : " + str(symbolNew) + "\n"
+            debugMsg += warn + warn
+            send_message_TMT_TestNet0(debugMsg)
+            debugMsg = "" 
+            symbol = symbolNew
+            isYenilemeZamani = False
 
     long_signal = False 
     short_signal = False
