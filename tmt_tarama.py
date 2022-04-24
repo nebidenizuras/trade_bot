@@ -21,7 +21,7 @@ rsiPeriod = 12
 timeFrame = 5
 interval = '5m' 
 symbol = ""
-limit = rsiPeriod * 3
+limit = rsiPeriod * 2
 
 symbolListFuture = get_symbol_list("USDT", "Future")
 symbolListSpot = get_symbol_list("USDT", "Spot")
@@ -37,6 +37,7 @@ def calculate_hype_point(market):
     global symbolListFuture
     global symbolListSpot
     global searchList
+    global candleTime
 
     if (market == "Spot"):
         symbolList = symbolListSpot
@@ -49,6 +50,7 @@ def calculate_hype_point(market):
         elif (market == "Future"):
             candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
 
+        ## Get Data
         df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                             'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
                                             'taker_buy_quote_asset_volume', 'ignore']) 
@@ -63,14 +65,32 @@ def calculate_hype_point(market):
         df['low'] = df['low'].astype('float')
         df["RSI"] = tb.rsi(df["close"],rsiPeriod)
         
+        ## Calculate Hype Rate
         candleTime = df['openTime'][limit-2]
         hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50)
         hypeRate = round(hypeRate,3)
+
+        ## Add to hype list
         if hypeRate >= 0:
             searchList[symbol] = hypeRate
 
-    searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order
+    ## Sort from biggest to smallest
+    searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order   
 
+    # Update symbol lists
+    symbolListFuture = get_symbol_list("USDT", "Future")
+    symbolListSpot = get_symbol_list("USDT", "Spot")
+
+def do_work_hype_coin_scanning(market):
+    # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
+    # Wait 1 second until we are synced up with the 'every 5 minute' clock  
+    while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
+    #while datetime.now().minute % timeFrame != 0: 
+        time.sleep(1) 
+
+    calculate_hype_point(market)
+
+    debugMsg = ""
     debugMsg = warn + " " + market + " Coin Liste Taraması (" + interval + ")\n\n"
     debugMsg += "Hesaplanan Mum Zamanı : " + str(candleTime) + "\n\n"
 
@@ -80,18 +100,8 @@ def calculate_hype_point(market):
     send_message_tarama(debugMsg)
     debugMsg = ""
 
-    # Sembol listesini güncelle, silinen ve eklenen coinler güncellensin
-    symbolListFuture = get_symbol_list("USDT", "Future")
-    symbolListSpot = get_symbol_list("USDT", "Spot")
-
-    time.sleep(30)
-
-    # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
-    # Wait 1 second until we are synced up with the 'every 1 hour' clock  
-    while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
-    #while datetime.now().minute % timeFrame != 0: 
-        time.sleep(5)         
+    time.sleep(60)
 
 while (1):
-    calculate_hype_point("Future")
+    do_work_hype_coin_scanning("Future")    
     time.sleep(1)        
