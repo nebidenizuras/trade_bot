@@ -54,7 +54,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "MTLUSDT"
+symbol = "TRXUSDT"
 interval = "5m"
 limit = emaSignal + 10
 
@@ -65,6 +65,7 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
 
 startMsg = warn + warn + warn + "\n"
 startMsg += "TMT Robot Çalışmaya Başladı\n"
+startMsg += "TMT Strategy 6\n"
 startMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
 startMsg += "Strateji -> EMA" + str(emaBuy) +  " Open / EMA" + str(emaSell) + " Close / EMA" + str(emaSignal) + " Open\n"
 startMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
@@ -146,6 +147,11 @@ while(True):
         debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyatı) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
         debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
+        debugMsg += "\n"
+        debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(df["EMABUY"][limit-1]) + "\n" 
+        debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][limit-1]) + "\n"
+        debugMsg += "EMA(" + str(emaSignal) + ") -> " + str(df["EMASIGNAL"][limit-1]) + "\n"
+        debugMsg += "\n"  
         debugMsg += "---------------------------------------\n"          
 
         islemBitti = True
@@ -165,7 +171,12 @@ while(True):
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyatı) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"   
+        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
+        debugMsg += "\n"
+        debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(df["EMABUY"][limit-1]) + "\n" 
+        debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][limit-1]) + "\n"
+        debugMsg += "EMA(" + str(emaSignal) + ") -> " + str(df["EMASIGNAL"][limit-1]) + "\n"
+        debugMsg += "\n"     
         debugMsg += "---------------------------------------\n"          
 
         islemBitti = True
@@ -202,7 +213,12 @@ while(True):
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyatı) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"         
+        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n" 
+        debugMsg += "\n"
+        debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(df["EMABUY"][limit-1]) + "\n" 
+        debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][limit-1]) + "\n"
+        debugMsg += "EMA(" + str(emaSignal) + ") -> " + str(df["EMASIGNAL"][limit-1]) + "\n"
+        debugMsg += "\n"          
         debugMsg += "---------------------------------------\n"          
 
         islemBitti = True 
@@ -222,7 +238,12 @@ while(True):
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyatı) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"         
+        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n" 
+        debugMsg += "\n"
+        debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(df["EMABUY"][limit-1]) + "\n" 
+        debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][limit-1]) + "\n"
+        debugMsg += "EMA(" + str(emaSignal) + ") -> " + str(df["EMASIGNAL"][limit-1]) + "\n"
+        debugMsg += "\n"          
         debugMsg += "---------------------------------------\n"          
 
         islemBitti = True

@@ -67,8 +67,9 @@ def calculate_hype_point(market):
         
         ## Calculate Hype Rate
         candleTime = df['openTime'][limit-2]
-        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50)
-        hypeRate = round(hypeRate,3)
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2])
+        #hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50) # RSI kapatıldı
+        hypeRate = round(hypeRate,5)
 
         ## Add to hype list
         if hypeRate >= 0:
@@ -94,8 +95,12 @@ def do_work_hype_coin_scanning(market):
     debugMsg = warn + " " + market + " Coin Liste Taraması (" + interval + ")\n\n"
     debugMsg += "Hesaplanan Mum Zamanı : " + str(candleTime) + "\n\n"
 
+    counter = 0
     for key, value in searchList.items():
+        if(counter == 20):
+            break
         debugMsg += str(key) + " : " + str(value) + "\n"       
+        counter = counter + 1
 
     send_message_tarama(debugMsg)
     debugMsg = ""
