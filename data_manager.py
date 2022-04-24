@@ -47,10 +47,10 @@ def historical_data_write_to_file(symbol, timeFrame, candlesticks):
     csvFileW.close()
 
 # Get Historical Data
-def get_historical_data(market):
-    symbolList = ["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT", "WAVESUSDT"]
-    timeFrame= client.KLINE_INTERVAL_15MINUTE
-    startDateOfData = "1 April, 2022"
+def get_historical_data_list(market):
+    symbolList = ["MTLUSDT"]#["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT", "WAVESUSDT"]
+    timeFrame= client.KLINE_INTERVAL_5MINUTE
+    startDateOfData = "20 April, 2022"
     endDateOfData = "24 April, 2022"
 
     for symbol in tqdm(symbolList):
@@ -62,6 +62,18 @@ def get_historical_data(market):
             candlesticks = client.futures_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
         
         historical_data_write_to_file(symbol, timeFrame, candlesticks)
+
+    print("Finished Data Downloading...")
+
+def get_historical_data_symbol(market, symbol, startDateOfData, endDateOfData, timeFrame):
+    print("\nStarted Data Downloading...: " + symbol + " " + timeFrame + " Time Frame")
+    
+    if (market == "Spot"):
+        candlesticks = client.get_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
+    elif (market == "Future"):
+        candlesticks = client.futures_historical_klines(symbol, timeFrame, startDateOfData, endDateOfData)
+    
+    historical_data_write_to_file(symbol, timeFrame, candlesticks)
 
     print("Finished Data Downloading...")
 
@@ -79,5 +91,5 @@ def get_symbol_list(asset, market):
     
     return symbol_list
 
-#get_historical_data("Future")
+#get_historical_data_list("Future")
 #get_symbol_list("USDT", "Spot")
