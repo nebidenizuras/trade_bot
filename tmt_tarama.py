@@ -10,6 +10,7 @@ from datetime import datetime
 from datetime import timedelta
 from ta.momentum import RSIIndicator
 from data_manager import get_symbol_list
+import operator
 
 client = Client(user_api_key.key_id,user_api_key.secret_key_id) 
 
@@ -29,14 +30,13 @@ symbolList = ""
 debugMsg = ""
 candleTime = 0
 hypeRate = 0
-rateList = []
-searchList = []
-searchListOrdered = []
+searchList = {}
 
 def calculate_hype_point(market):
     global symbolList
     global symbolListFuture
     global symbolListSpot
+    global searchList
 
     if (market == "Spot"):
         symbolList = symbolListSpot
@@ -66,17 +66,16 @@ def calculate_hype_point(market):
         candleTime = df['openTime'][limit-2]
         hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50)
         hypeRate = round(hypeRate,3)
-        hypeRateStr = str(hypeRate).zfill(7)
-        rateList.append(hypeRateStr)
+        if hypeRate >= 0:
+            searchList[symbol] = hypeRate
 
-    searchList = dict(zip(symbolList, rateList))
-    searchListOrdered = dict(sorted(searchList.items(),key=lambda x:x[1],reverse = True)) # ascending order
+    searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order
 
     debugMsg = warn + " " + market + " Coin Liste Taraması (" + interval + ")\n\n"
     debugMsg += "Hesaplanan Mum Zamanı : " + str(candleTime) + "\n\n"
 
-    for i in searchListOrdered:
-        debugMsg += str(i) + " : " + str(searchListOrdered[i]) + "\n"       
+    for key, value in searchList.items():
+        debugMsg += str(key) + " : " + str(value) + "\n"       
 
     send_message_tarama(debugMsg)
     debugMsg = ""
