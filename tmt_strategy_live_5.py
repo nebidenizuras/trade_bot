@@ -196,6 +196,7 @@ while(True):
         hedefFiyati = longKarFiyat
         stopFiyati = shortGirisFiyat
         karOrani = (longKarFiyat / longGirisFiyat) - 1 
+        debugMsg += warn + "LONG İşlem Açıldı.\n" 
         debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
         debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
@@ -254,6 +255,8 @@ while(True):
         hedefFiyati = shortKarFiyat
         stopFiyati = longGirisFiyat
         karOrani = (shortGirisFiyat / shortKarFiyat) - 1 
+
+        debugMsg += warn + "SHORT İşlem Açıldı.\n" 
         debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
         debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
@@ -270,7 +273,7 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += warn + " LONG İşlem Kar İle Kapandı.\n"
+        debugMsg += warn + " SHORT İşlem Kar İle Kapandı.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
@@ -289,7 +292,7 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += warn + " LONG İşlem Stop Oldu.\n"
+        debugMsg += warn + " SHORT İşlem Stop Oldu.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Stop Fiyatı\t: " + str(stopFiyati) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
@@ -336,6 +339,6 @@ while(True):
         hedefFiyati = 0
 
         while datetime.now().minute % timeFrame != 0: 
-            time.sleep(3)
+            time.sleep(5)
 
     time.sleep(1) 
