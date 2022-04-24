@@ -77,7 +77,7 @@ warn = '\U0000203C'
 
 msg = warn + warn + warn + "\nSakin Ol, Plana Güven...\n" + warn + warn + warn
 
-send_message_TMT_TestNet0(msg)
-send_message_TMT_TestNet1(msg)
-send_message_TMT_TestNet2(msg)
-send_message_tarama(msg)
+#send_message_TMT_TestNet0(msg)
+#send_message_TMT_TestNet1(msg)
+#send_message_TMT_TestNet2(msg)
+#send_message_tarama(msg)
