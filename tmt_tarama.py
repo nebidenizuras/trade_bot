@@ -86,7 +86,7 @@ def do_work_hype_coin_scanning(market):
     # Wait 1 second until we are synced up with the 'every 5 minute' clock  
     while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
     #while datetime.now().minute % timeFrame != 0: 
-        time.sleep(1) 
+        time.sleep(10) 
 
     calculate_hype_point(market)
 
