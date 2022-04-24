@@ -139,6 +139,7 @@ while(True):
         df['high'] = df['high'].astype('float') 
         df['low'] = df['low'].astype('float') 
         df["EMA"] = ema_indicator(df["close"],emaVal)
+        df["FIB_0_500"] = calculate_fib(df,fibVal, 0.5)
         long_signal = df["EMA"][limit-1] > df["FIB_0_500"][limit-1]   
         short_signal = df["EMA"][limit-1] < df["FIB_0_500"][limit-1]
 
