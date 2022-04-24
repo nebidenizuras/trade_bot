@@ -84,6 +84,8 @@ def calculate_hype_point(market):
     symbolListFuture = get_symbol_list("USDT", "Future")
     symbolListSpot = get_symbol_list("USDT", "Spot")
 
+    time.sleep(30)
+
     # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
     # Wait 1 second until we are synced up with the 'every 1 hour' clock  
     while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
