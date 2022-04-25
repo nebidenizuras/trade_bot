@@ -54,7 +54,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "TRXUSDT"
+symbol = "APEUSDT"
 interval = "5m"
 limit = emaSignal + 10
 
@@ -285,4 +285,4 @@ while(True):
         islemFiyatı = 0
         hedefFiyatı = 0
 
-    time.sleep(1) 
+    time.sleep(0.1) 
