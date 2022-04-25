@@ -74,7 +74,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "TRXUSDT"
+symbol = "APEUSDT"
 interval = "15m"
 limit = fibVal + 2
 
