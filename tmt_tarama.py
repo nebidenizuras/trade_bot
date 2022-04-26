@@ -5,7 +5,7 @@ import pandas as pd
 import pandas_ta as tb
 import user_api_key 
 import time   
-from telegram_bot import send_message_tarama, warn
+from telegram_bot import *
 from datetime import datetime 
 from datetime import timedelta
 from ta.momentum import RSIIndicator
@@ -15,13 +15,13 @@ import operator
 client = Client(user_api_key.key_id,user_api_key.secret_key_id) 
 
 # Teknik Analiz
-rsiPeriod = 12
+rsiPeriod = 21
 
 # Parite Bilgileri
-timeFrame = 5
-interval = '5m' 
+timeFrame = 1
+interval = '1m' 
 symbol = ""
-limit = rsiPeriod * 2
+limit = rsiPeriod * 6
 
 symbolListFuture = get_symbol_list("USDT", "Future")
 symbolListSpot = get_symbol_list("USDT", "Spot")
@@ -67,7 +67,8 @@ def calculate_hype_point(market):
         
         ## Calculate Hype Rate
         candleTime = df['openTime'][limit-2]
-        hypeRate = (df['high'][limit-2] / df['low'][limit-2])
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 35)
+        #hypeRate = (df['high'][limit-2] / df['low'][limit-2])
         #hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 50) # RSI kapatıldı
         hypeRate = round(hypeRate,5)
 
@@ -85,9 +86,10 @@ def calculate_hype_point(market):
 def do_work_hype_coin_scanning(market):
     # Aynı mum içinde tekrar tekrar işlem yapmasın diye bir sonraki mum açılışını bekle
     # Wait 1 second until we are synced up with the 'every 5 minute' clock  
-    while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
+    #while datetime.now().minute not in {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55}: 
     #while datetime.now().minute % timeFrame != 0: 
-        time.sleep(10) 
+    while datetime.now().second == 0:
+        time.sleep(1) 
 
     calculate_hype_point(market)
 
@@ -97,15 +99,13 @@ def do_work_hype_coin_scanning(market):
 
     counter = 0
     for key, value in searchList.items():
-        if(counter == 20):
+        if(counter == 5):
             break
         debugMsg += str(key) + " : " + str(value) + "\n"       
         counter = counter + 1
 
-    send_message_tarama(debugMsg)
+    send_message_to_telegram(channelTarama, debugMsg)
     debugMsg = ""
-
-    time.sleep(60)
 
 while (1):
     do_work_hype_coin_scanning("Future")    
