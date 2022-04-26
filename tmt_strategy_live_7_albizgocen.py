@@ -28,7 +28,7 @@ islemBuyuklugu = 0
 
 #ATTRIBUTES
 kaldirac = 1
-feeOranı = 0.0004 # percent
+feeOrani = 0.0004 # percent
 karOrani = 0.0022 # percent
 
 baslangicPara = 111
@@ -60,7 +60,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "MTLUSDT"
+symbol = "KAVAUSDT"
 interval = "5m"
 timeFrame = 5
 limit = emaSignal * 2
@@ -153,8 +153,8 @@ while(True):
     df["EMASELL"] = ema_indicator(df[emaSellType],emaSell)
     df["EMASIGNAL"] = ema_indicator(df[emaSignalType],emaSignal)     
 
-    long_signal = (df["EMABUY"][limit-1] > df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] > df["EMASIGNAL"][limit-1]) #and (df["close"][limit-1] >= df["EMASIGNAL"][limit-1])
-    short_signal = (df["EMABUY"][limit-1] < df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] < df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] < df["EMASIGNAL"][limit-1]) #and (df["close"][limit-1] <= df["EMASIGNAL"][limit-1])       
+    long_signal = (df["EMABUY"][limit-1] > df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] > df["EMASIGNAL"][limit-1]) and (df["close"][limit-1] >= df["EMABUY"][limit-1])
+    short_signal = (df["EMABUY"][limit-1] < df["EMASELL"][limit-1]) and (df["EMABUY"][limit-1] < df["EMASIGNAL"][limit-1]) and (df["EMASELL"][limit-1] < df["EMASIGNAL"][limit-1]) and (df["close"][limit-1] <= df["EMASELL"][limit-1])      
 
     ### Giriş Bilgilerini Ayarla
     if start == False and (position == "") and (long_signal or short_signal):        
@@ -173,7 +173,7 @@ while(True):
     if start == False and position == "" and long_signal:
         start = True
         toplamIslemSayisi = toplamIslemSayisi + 1
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
         position = "Long"    
         islemFiyati = df["close"][limit-1]
@@ -200,7 +200,7 @@ while(True):
         islemKar = cuzdan * karOrani * kaldirac
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
         debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
@@ -223,7 +223,7 @@ while(True):
         zararOran = islemKar / cuzdan
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
         debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
@@ -244,7 +244,7 @@ while(True):
     if start == False and position == "" and short_signal:
         start = True
         toplamIslemSayisi = toplamIslemSayisi + 1
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
         position = "Short"    
         islemFiyati = df["close"][limit-1]
@@ -270,7 +270,7 @@ while(True):
         islemKar = cuzdan * karOrani * kaldirac
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
         debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
@@ -290,10 +290,10 @@ while(True):
     if start and (position == "Short") and df["close"][limit-1] >= df["EMASIGNAL"][limit-1]:
         hedefFiyati = df["close"][limit-1]
 
-        islemKar = cuzdan * (((islemFiyati - hedefFiyati) / islemFiyati)) * kaldirac
+        zararOran = cuzdan * (((islemFiyati - hedefFiyati) / islemFiyati)) * kaldirac
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
-        islemFee = cuzdan * feeOranı * kaldirac
+        islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
         debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
@@ -342,4 +342,4 @@ while(True):
         islemFiyati = 0
         hedefFiyati = 0
 
-    time.sleep(1) 
+    time.sleep(0.2) 
