@@ -15,7 +15,7 @@ from binance.client import Client
 import pandas as pd 
 from user_api_key import key_id, secret_key_id
 import time   
-from telegram_bot import send_message_TMT_TestNet1, warn
+from telegram_bot import *
 from datetime import datetime 
 from datetime import timedelta
 from ta.trend import ema_indicator
@@ -66,6 +66,7 @@ islemBitti = False
 # Sinyal Değerleri
 fibVal = 8
 emaVal = 5
+emaType = "open" # "open" or "close"
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
@@ -83,14 +84,14 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
       'taker_buy_quote_asset_volume', 'ignore']
 
 
-startMsg = warn + warn + warn + "\n"
-startMsg += "TMT Robot Çalışmaya Başladı\n"
-startMsg += "TMT Strateji 5\n"
-startMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-startMsg += "Strateji -> EMA" + str(emaVal) +  " Close / Fib " + str(fibVal) + "\n"
-startMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
-startMsg += warn + warn + warn
-send_message_TMT_TestNet1(startMsg)
+debugMsg = warn + warn + warn + "\n"
+debugMsg += "TMT Robot Çalışmaya Başladı\n"
+debugMsg += "TMT Strateji 5 - Atsız\n"
+debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
+debugMsg += "Strateji -> EMA" + str(emaVal) + " " + str(emaType) + " / Fib " + str(fibVal) + "\n"
+debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
+debugMsg += warn + warn + warn
+send_message_to_telegram(channelAtsiz, debugMsg)
 time.sleep(1)
 
 while(True):
@@ -110,7 +111,7 @@ while(True):
         df['low'] = df['low'].astype('float')
         df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
         df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
-        df["EMA"] = ema_indicator(df["close"],emaVal)
+        df["EMA"] = ema_indicator(df[emaType],emaVal)
         df["FIB_1"] = calculate_fib(df,fibVal, 1)
         df["FIB_0_772"] = calculate_fib(df,fibVal, 0.772)
         df["FIB_0_572"] = calculate_fib(df,fibVal, 0.572)
@@ -138,7 +139,7 @@ while(True):
         df['close'] = df['close'].astype('float') 
         df['high'] = df['high'].astype('float') 
         df['low'] = df['low'].astype('float') 
-        df["EMA"] = ema_indicator(df["close"],emaVal)
+        df["EMA"] = ema_indicator(df[emaType],emaVal)
         df["FIB_0_500"] = calculate_fib(df,fibVal, 0.5)
         long_signal = df["EMA"][limit-1] > df["FIB_0_500"][limit-1]   
         short_signal = df["EMA"][limit-1] < df["FIB_0_500"][limit-1]
@@ -152,13 +153,13 @@ while(True):
             start = True
             startTime =  df["openTime"][limit-1]
 
-            shortStopFiyat = df["FIB_1"][limit-1]
+            shortStopFiyat = df["FIB_0_572"][limit-1]
             longKarFiyat = df["FIB_0_772"][limit-1]
             longGirisFiyat = df["FIB_0_572"][limit-1]
             referansOrtaFiyat = df["FIB_0_500"][limit-1]                 
             shortGirisFiyat = df["FIB_0_428"][limit-1]           
             shortKarFiyat = df["FIB_0_228"][limit-1]
-            longStopFiyat = df["FIB_0"][limit-1]   
+            longStopFiyat = df["FIB_0_428"][limit-1]   
 
             debugMsg = ""
             debugMsg += "---------------------------------------\n" 
@@ -166,13 +167,13 @@ while(True):
             debugMsg += "\n"  
             debugMsg += "Al-Sat Bant Aralığı ->\n"
             debugMsg += "İşlem Bant Aralığı\t: % " + str(bantReferans * 100) + "\n"
-            debugMsg += "Short Stop Ol Fiyat\t: " + str(shortStopFiyat) + "\n"
             debugMsg += "Long Kar Al Fiyat\t: " + str(longKarFiyat) + "\n"
             debugMsg += "Long Giriş Fiyat\t: " + str(longGirisFiyat) + "\n"
+            debugMsg += "Short Stop Ol Fiyat\t: " + str(shortStopFiyat) + "\n"
             debugMsg += "Referans Orta Fiyat\t: " + str(referansOrtaFiyat) + "\n"
-            debugMsg += "Short Giriş Fiyat\t: " + str(shortGirisFiyat) + "\n"
-            debugMsg += "Short Kar Al Fiyat\t: " + str(shortKarFiyat) + "\n"
             debugMsg += "Long Stop Ol Fiyat\t: " + str(longStopFiyat) + "\n"
+            debugMsg += "Short Giriş Fiyat\t: " + str(shortGirisFiyat) + "\n"
+            debugMsg += "Short Kar Al Fiyat\t: " + str(shortKarFiyat) + "\n"           
             debugMsg += "\n"  
             debugMsg += "FIB Değerleri -> \n"
             debugMsg += "FIB_1_000 : " + str(df["FIB_1"][limit-1]) + "\n"
@@ -202,7 +203,7 @@ while(True):
         debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
         debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Giriş Fee ($)\t: " + str(islemFee) + "\n"
-        send_message_TMT_TestNet1(debugMsg)
+        send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = ""  
 
     # LONG İşlem Kar Al
@@ -213,9 +214,11 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
+        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
         debugMsg += warn + " LONG İşlem Kar İle Kapandı.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
+        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
         debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
         debugMsg += "---------------------------------------\n"          
@@ -232,9 +235,11 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
+        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
         debugMsg += warn + " LONG İşlem Stop Oldu.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Stop Fiyatı\t: " + str(stopFiyati) + "\n"
+        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
         debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"   
         debugMsg += "---------------------------------------\n"          
@@ -262,7 +267,7 @@ while(True):
         debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
         debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Giriş Fee ($)\t: " + str(islemFee) + "\n"
-        send_message_TMT_TestNet1(debugMsg)
+        send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = ""  
 
     # SHORT İşlem Kar Al
@@ -273,9 +278,11 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
+        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
         debugMsg += warn + " SHORT İşlem Kar İle Kapandı.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
+        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
         debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
         debugMsg += "---------------------------------------\n"          
@@ -292,9 +299,11 @@ while(True):
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
+        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
         debugMsg += warn + " SHORT İşlem Stop Oldu.\n"
         debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "İşlem Stop Fiyatı\t: " + str(stopFiyati) + "\n"
+        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
         debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
         debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"   
         debugMsg += "---------------------------------------\n"          
@@ -305,21 +314,22 @@ while(True):
 
     if (cuzdan + 10) < toplamFee:
         debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
-        send_message_TMT_TestNet1(debugMsg)
+        send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = "" 
         quit()   
      
     if islemBitti == True:     
         debugMsg += "\n"
         debugMsg += "****************************************\n"
-        debugMsg += "GENEL ÖZET\n"
+        debugMsg += "GENEL ÖZET - TMT Strategy 5 - Atsız\n"
         debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-        debugMsg += "Strateji -> EMA" + str(emaVal) +  " Open / Fib " + str(fibVal) +"\n"
+        debugMsg += "Strateji -> EMA" + str(emaVal) + " " + str(emaType) + " / Fib " + str(fibVal) + "\n"
+        debugMsg += "İşlem Bandı Minimum\t: % " + str(bantMinimumOran * 100) + "\n"
         debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
         debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
         debugMsg += "Toplam Ödenen Fee($)\t: " + str(toplamFee) + "\n"
         debugMsg += "Son Para($)\t\t: " + str(cuzdan - toplamFee) + "\n"
-        debugMsg += "Kazanç\t\t\t: % " + str(((cuzdan - baslangicPara - toplamFee) / baslangicPara) * 100) + "\n"
+        debugMsg += "Kazanç\t\t\t: % " + str((cuzdan / baslangicPara) * 100) + "\n"
         debugMsg += "Kaldıraç\t\t: " + str(kaldirac) + "x\n"
         debugMsg += "Toplam İşlem Adet\t: " + str(toplamIslemSayisi) + "\n"
         debugMsg += "Karlı İşlem Adet\t: " + str(toplamKarliIslemSayisi) + "\n"
@@ -327,7 +337,7 @@ while(True):
         debugMsg += "Kar Başarı Oranı\t: % " + str((toplamKarliIslemSayisi / toplamIslemSayisi) * 100) + "\n"
         debugMsg += "Zarar Kes Oranı\t\t: % " + str((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100) + "\n"
         debugMsg += "****************************************\n"
-        send_message_TMT_TestNet1(debugMsg)
+        send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = "" 
               
         islemBitti = False
