@@ -329,7 +329,7 @@ while(True):
         debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
         debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
         debugMsg += "Fund\t: " + str(round(cuzdan,7)) + "\n"
-        debugMsg += "ROI\t: % " + str(round((cuzdan / baslangicPara) * 100,3)) + "\n"
+        debugMsg += "ROI\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
         debugMsg += "\n"
         debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
         debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
