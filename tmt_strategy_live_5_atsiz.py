@@ -7,7 +7,6 @@
 - Stop noktaları diğer yön işlemin açıldığı yer ve eması 0.5'e uyumlu ise
 '''
 
-
 from Indicators.fibonacci_retracement import calculate_fib
 from operator import index
 import array as arr
@@ -84,16 +83,6 @@ df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
       'taker_buy_quote_asset_volume', 'ignore']
 
 
-debugMsg = warn + warn + warn + "\n"
-debugMsg += "TMT Robot Çalışmaya Başladı\n"
-debugMsg += "TMT Strateji 5 - Atsız\n"
-debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-debugMsg += "Strateji -> EMA" + str(emaVal) + " " + str(emaType) + " / Fib " + str(fibVal) + "\n"
-debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
-debugMsg += warn + warn + warn
-send_message_to_telegram(channelAtsiz, debugMsg)
-time.sleep(1)
-
 while(True):
     if (position == ""):
         start = False
@@ -162,25 +151,30 @@ while(True):
             longStopFiyat = df["FIB_0_428"][limit-1]   
 
             debugMsg = ""
-            debugMsg += "---------------------------------------\n" 
-            debugMsg += str(toplamIslemSayisi + 1) + ". İşlem Sinyali Geldi\n"
+            debugMsg += str(toplamIslemSayisi + 1) + ". Signal\n"
             debugMsg += "\n"  
-            debugMsg += "Al-Sat Bant Aralığı ->\n"
-            debugMsg += "İşlem Bant Aralığı\t: % " + str(bantReferans * 100) + "\n"
-            debugMsg += "Long Kar Al Fiyat\t: " + str(longKarFiyat) + "\n"
-            debugMsg += "Long Giriş Fiyat\t: " + str(longGirisFiyat) + "\n"
-            debugMsg += "Short Stop Ol Fiyat\t: " + str(shortStopFiyat) + "\n"
-            debugMsg += "Referans Orta Fiyat\t: " + str(referansOrtaFiyat) + "\n"
-            debugMsg += "Long Stop Ol Fiyat\t: " + str(longStopFiyat) + "\n"
-            debugMsg += "Short Giriş Fiyat\t: " + str(shortGirisFiyat) + "\n"
-            debugMsg += "Short Kar Al Fiyat\t: " + str(shortKarFiyat) + "\n"           
-            debugMsg += "\n"  
-            debugMsg += "FIB Değerleri -> \n"
-            debugMsg += "FIB_1_000 : " + str(df["FIB_1"][limit-1]) + "\n"
-            debugMsg += "FIB_0_500 : " + str(df["FIB_0_500"][limit-1]) + "\n"
-            debugMsg += "FIB_0_000 : " + str(df["FIB_0"][limit-1]) + "\n"    
+            debugMsg += "Trade Band\t: % " + str(round(bantReferans * 100, 3)) + "\n"
+            debugMsg += "Pivot Price\t: " + str(round(referansOrtaFiyat,7)) + "\n"
             debugMsg += "\n"
-            debugMsg += "EMA(" + str(emaVal) + ") -> " + str(df["EMA"][limit-1]) + "\n" 
+            debugMsg += "LONG Order Price\t: " + str(round(longGirisFiyat, 7)) + "\n"
+            debugMsg += "LONG TP\t: " + str(round(longKarFiyat, 7)) + "\n"
+            debugMsg += "LONG SL\t: " + str(round(longStopFiyat,7)) + "\n"
+            debugMsg += "\n"
+            debugMsg += "SHORT Order Price\t: " + str(round(shortGirisFiyat,7)) + "\n"
+            debugMsg += "SHORT TP\t: " + str(round(shortKarFiyat,7)) + "\n"
+            debugMsg += "SHORT SL\t: " + str(round(shortStopFiyat,7)) + "\n"                                      
+            debugMsg += "\n"  
+            debugMsg += "Refrence Bands\n" 
+            debugMsg += "\n"  
+            debugMsg += "FIB 1.000 : " + str(df["FIB_1"][limit-1]) + "\n"
+            debugMsg += "FIB 0.772 : " + str(df["FIB_0_772"][limit-1]) + "\n"
+            debugMsg += "FIB 0.572 : " + str(df["FIB_0_572"][limit-1]) + "\n"
+            debugMsg += "FIB 0.500 : " + str(df["FIB_0_500"][limit-1]) + "\n"
+            debugMsg += "FIB 0.428 : " + str(df["FIB_0_428"][limit-1]) + "\n"
+            debugMsg += "FIB 0.228 : " + str(df["FIB_0_228"][limit-1]) + "\n"
+            debugMsg += "FIB 0.000 : " + str(df["FIB_0"][limit-1]) + "\n" 
+            debugMsg += "\n"
+            debugMsg += "EMA(" + str(emaVal) + ") -> " + str(round(df["EMA"][limit-1],3)) + "\n" 
             debugMsg += "\n" 
         else:
             start = False 
@@ -197,31 +191,33 @@ while(True):
         hedefFiyati = longKarFiyat
         stopFiyati = shortGirisFiyat
         karOrani = (longKarFiyat / longGirisFiyat) - 1 
-        debugMsg += warn + "LONG İşlem Açıldı.\n" 
-        debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
-        debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Giriş Fee ($)\t: " + str(islemFee) + "\n"
+        debugMsg += warn + " LONG Position Open\n" 
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
         send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = ""  
 
     # LONG İşlem Kar Al
     if start and (position == "Long") and (df["high"][limit-1] >= hedefFiyati and hedefFiyati >= df["low"][limit-1]):
         islemKar = cuzdan * karOrani * kaldirac
+        islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
-        debugMsg += warn + " LONG İşlem Kar İle Kapandı.\n"
-        debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
-        debugMsg += "---------------------------------------\n"          
+        debugMsg += str(toplamIslemSayisi) + " Signal\n"
+        debugMsg += "\n"
+        debugMsg += warn + " LONG Position Close Take Profit\n"
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
+        debugMsg += "Order Profit\t: % " + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
@@ -230,19 +226,21 @@ while(True):
     # LONG İşlem Stop Ol
     if start and (position == "Long") and (df["high"][limit-1] >= stopFiyati and stopFiyati >= df["low"][limit-1]) and short_signal:
         islemKar = cuzdan * (((stopFiyati - islemFiyati) / islemFiyati)) * kaldirac
+        islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
-        debugMsg += warn + " LONG İşlem Stop Oldu.\n"
-        debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Stop Fiyatı\t: " + str(stopFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"   
-        debugMsg += "---------------------------------------\n"          
+        debugMsg += str(toplamIslemSayisi) + " Signal\n"
+        debugMsg += "\n"
+        debugMsg += warn + " LONG Position Close Stop Loss\n"
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
+        debugMsg += "Order Profit\t: % -" + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
@@ -261,31 +259,33 @@ while(True):
         stopFiyati = longGirisFiyat
         karOrani = (shortGirisFiyat / shortKarFiyat) - 1 
 
-        debugMsg += warn + "SHORT İşlem Açıldı.\n" 
-        debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
-        debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Giriş Fee ($)\t: " + str(islemFee) + "\n"
+        debugMsg += warn + " SHORT Position Open\n" 
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
         send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = ""  
 
     # SHORT İşlem Kar Al
     if start and (position == "Short") and (df["low"][limit-1] <= hedefFiyati and hedefFiyati <= df["high"][limit-1]):
         islemKar = cuzdan * karOrani * kaldirac
+        islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
-        debugMsg += warn + " SHORT İşlem Kar İle Kapandı.\n"
-        debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"
-        debugMsg += "---------------------------------------\n"          
+        debugMsg += str(toplamIslemSayisi) + " Signal\n"
+        debugMsg += "\n"
+        debugMsg += warn + " SHORT Position Close Take Profit\n"
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
+        debugMsg += "Order Profit\t: % " + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
@@ -294,19 +294,21 @@ while(True):
     # SHORT İşlem Stop Ol
     if start and (position == "Short") and (df["low"][limit-1] <= stopFiyati and stopFiyati <= df["high"][limit-1]) and long_signal:
         islemKar = cuzdan * (((islemFiyati - stopFiyati) / islemFiyati)) * kaldirac
+        islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
         cuzdan = cuzdan + islemKar
         islemFee = cuzdan * feeOrani * kaldirac
         toplamFee += islemFee
 
-        debugMsg += str(toplamIslemSayisi) + ". İşlem Kapandı.\n"
-        debugMsg += warn + " SHORT İşlem Stop Oldu.\n"
-        debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][limit-1]) + "\n"
-        debugMsg += "İşlem Stop Fiyatı\t: " + str(stopFiyati) + "\n"
-        debugMsg += "İşlem Büyüklüğü ($)\t: " + str(cuzdan * kaldirac) + "\n"
-        debugMsg += "İşlem Çıkış Fee ($)\t: " + str(islemFee) + "\n" 
-        debugMsg += "İşlem Kar ($)\t\t: " + str(islemKar) + "\n"   
-        debugMsg += "---------------------------------------\n"          
+        debugMsg += str(toplamIslemSayisi) + " Signal\n"
+        debugMsg += "\n"
+        debugMsg += warn + " SHORT Position Close Stop Loss\n"
+        debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
+        debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+        debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
+        debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+        debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
+        debugMsg += "Order Profit\t: % -" + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
@@ -320,23 +322,20 @@ while(True):
      
     if islemBitti == True:     
         debugMsg += "\n"
-        debugMsg += "****************************************\n"
-        debugMsg += "GENEL ÖZET - TMT Strategy 5 - Atsız\n"
-        debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-        debugMsg += "Strateji -> EMA" + str(emaVal) + " " + str(emaType) + " / Fib " + str(fibVal) + "\n"
-        debugMsg += "İşlem Bandı Minimum\t: % " + str(bantMinimumOran * 100) + "\n"
-        debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
-        debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
-        debugMsg += "Toplam Ödenen Fee($)\t: " + str(toplamFee) + "\n"
-        debugMsg += "Son Para($)\t\t: " + str(cuzdan - toplamFee) + "\n"
-        debugMsg += "Kazanç\t\t\t: % " + str((cuzdan / baslangicPara) * 100) + "\n"
-        debugMsg += "Kaldıraç\t\t: " + str(kaldirac) + "x\n"
-        debugMsg += "Toplam İşlem Adet\t: " + str(toplamIslemSayisi) + "\n"
-        debugMsg += "Karlı İşlem Adet\t: " + str(toplamKarliIslemSayisi) + "\n"
-        debugMsg += "Stop İşlem Adet\t\t: " + str(toplamZararKesIslemSayisi) + "\n"
-        debugMsg += "Kar Başarı Oranı\t: % " + str((toplamKarliIslemSayisi / toplamIslemSayisi) * 100) + "\n"
-        debugMsg += "Zarar Kes Oranı\t\t: % " + str((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100) + "\n"
-        debugMsg += "****************************************\n"
+        debugMsg += "Report\n"
+        debugMsg += "\n"
+        debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + " " + str(interval) + " FIB " + str(fibVal) + " EMA" + str(emaVal) + " " + str(emaType) + "\n"
+        debugMsg += "Invest\t: " + str(round(baslangicPara,7)) + "\n"
+        debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
+        debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
+        debugMsg += "Fund\t: " + str(round(cuzdan,7)) + "\n"
+        debugMsg += "ROI\t: % " + str(round((cuzdan / baslangicPara) * 100),3) + "\n"
+        debugMsg += "\n"
+        debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
+        debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
+        debugMsg += "SL Orders\t\t: " + str(toplamZararKesIslemSayisi) + "\n"
+        debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
+        debugMsg += "Lose Orders\t\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
         send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = "" 
               
@@ -349,6 +348,6 @@ while(True):
         hedefFiyati = 0
 
         while datetime.now().minute % timeFrame != 0: 
-            time.sleep(5)
+            time.sleep(1)
 
-    time.sleep(1) 
+    time.sleep(0.1) 

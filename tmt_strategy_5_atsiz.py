@@ -15,6 +15,7 @@ import os
 from Indicators.fibonacci_retracement import calculate_fib
 import array as arr
 from datetime import timedelta
+from telegram_bot import *
 
 kaldirac = 1
 start = False
@@ -56,7 +57,7 @@ stopTime = 0
 
 # Sinyal Değerleri
 fibVal = 8
-emaVal = 8
+emaVal = 5
 emaType = "open" # "open" or "close"
 
 # Order Amount Calculation
@@ -64,7 +65,7 @@ toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-symbol = "AVAXUSDT"
+symbol = "APEUSDT"
 interval = "15m"
 timeFrame = 15
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
