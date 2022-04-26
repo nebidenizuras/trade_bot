@@ -20,64 +20,41 @@ from threading import Thread
  
 message_url = "https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/sendMessage"
 
-def send_message_TMT_TestNet0(message): 
-    #print(message)
-    #'''   
-    #iş yükü parçacıgı için 
-    def thread1(): 
-        # mesajı telegrama yollayalım 
-        requests.post(url=message_url ,data={"chat_id":"-1001630300483","text":message}).json()                
- 
-    #thread ile fonksiyonu başlatır 
-    th = Thread(target=thread1) 
-    th.start()
-    #'''
+id_albiz_gocen  = "-1001630300483"   # Grup ID(TMT #TestNet 0)
+id_atsiz        = "-1001492284839"   # Grup ID(TMT #TestNet 1)
+id_albiz        = "-1001689764244"   # Grup ID(TMT #TestNet 2)
+id_tarama       = "-1001687885923"   # Grup ID(TMT Tarama)
 
-def send_message_TMT_TestNet1(message): 
-    #print(message)
-    #'''   
-    #iş yükü parçacıgı için 
-    def thread1(): 
-        # mesajı telegrama yollayalım 
-        requests.post(url=message_url ,data={"chat_id":"-1001492284839","text":message}).json()                
- 
-    #thread ile fonksiyonu başlatır 
-    th = Thread(target=thread1) 
-    th.start()
-    #'''
+channelAlbizGocen   = "channelAlbizGocen"
+channelAtsiz        = "channelAltiz"
+channelAlbiz        = "channelAlbiz"
+channelTarama       = "channelTarama"
 
-def send_message_TMT_TestNet2(message): 
+def send_message_to_telegram(channelID, message): 
     #print(message)
-    #'''   
+ 
     #iş yükü parçacıgı için 
     def thread1(): 
-        # mesajı telegrama yollayalım 
-        requests.post(url=message_url ,data={"chat_id":"-1001689764244","text":message}).json()                
- 
+        # mesajı telegram kanalına yollayalım 
+        if(channelID == channelAlbizGocen):
+            requests.post(url=message_url ,data={"chat_id":id_albiz_gocen,"text":message}).json()    
+        elif(channelID == channelAtsiz):
+            requests.post(url=message_url ,data={"chat_id":id_atsiz,"text":message}).json()    
+        elif(channelID == channelAlbiz): 
+            requests.post(url=message_url ,data={"chat_id":id_albiz,"text":message}).json()    
+        elif(channelID == channelTarama):
+            requests.post(url=message_url ,data={"chat_id":id_tarama,"text":message}).json()    
+                    
     #thread ile fonksiyonu başlatır 
     th = Thread(target=thread1) 
     th.start()
-    #'''
-
-def send_message_tarama(message): 
-    #print(message)
-    #'''   
-    #iş yükü parçacıgı için 
-    def thread1(): 
-        # mesajı telegrama yollayalım 
-        requests.post(url=message_url ,data={"chat_id":"-1001687885923","text":message}).json()                
- 
-    #thread ile fonksiyonu başlatır 
-    th = Thread(target=thread1) 
-    th.start()
-    #'''
 
 # EMOJI
 warn = '\U0000203C'
 
 msg = warn + warn + warn + "\nSakin Ol, Plana Güven...\n" + warn + warn + warn
 
-#send_message_TMT_TestNet0(msg)
-#send_message_TMT_TestNet1(msg)
-#send_message_TMT_TestNet2(msg)
-#send_message_tarama(msg)
+#send_message_to_telegram(channelAlbizGocen,msg)
+#send_message_to_telegram(channelAtsiz,msg)
+#send_message_to_telegram(channelAlbiz,msg)
+#send_message_to_telegram(channelTarama,msg)
