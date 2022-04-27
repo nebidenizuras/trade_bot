@@ -3,6 +3,11 @@ import user_api_key
 import csv
 from tqdm import tqdm
 from time import sleep
+import pandas as pd 
+from datetime import timedelta
+import pandas_ta as tb
+from operator import index
+import operator
 
 """
 # https://www.binance.com/en/landing/data
@@ -48,10 +53,10 @@ def historical_data_write_to_file(symbol, timeFrame, candlesticks):
 
 # Get Historical Data
 def get_historical_data_list(market):
-    symbolList = ["MTLUSDT"]#["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT", "WAVESUSDT"]
-    timeFrame= client.KLINE_INTERVAL_5MINUTE
+    symbolList = ["APEUSDT"]#["BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "AVAXUSDT", "NEARUSDT", "LUNAUSDT", "WAVESUSDT"]
+    timeFrame= client.KLINE_INTERVAL_15MINUTE
     startDateOfData = "20 April, 2022"
-    endDateOfData = "24 April, 2022"
+    endDateOfData = "27 April, 2022"
 
     for symbol in tqdm(symbolList):
         print("\nStarted Data Downloading...: " + symbol + " " + timeFrame + " Time Frame")
@@ -90,6 +95,52 @@ def get_symbol_list(asset, market):
                 symbol_list.append(coin["baseAsset"] + asset) 
     
     return symbol_list
+
+# Get Hype Symbol List
+def get_calculated_hype_symbol_list(market, interval, symbolList):
+    hypeRate = 0
+    symbol = ""
+    searchList = {}
+    candleTime = 0
+
+    # Teknik Analiz
+    rsiPeriod = 21
+    limit = rsiPeriod * 6
+
+    for symbol in symbolList:
+        if (market == "Spot"):
+            candles = client.get_klines(symbol=symbol, interval=interval, limit=limit) 
+        elif (market == "Future"):
+            candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
+
+        ## Get Data
+        df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
+                                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
+                                            'taker_buy_quote_asset_volume', 'ignore']) 
+        
+        ## Clean data 
+        df = df[['openTime', 'open', 'high', 'low', 'close', 'closeTime']]       
+        df['openTime'] = pd.to_datetime(df["openTime"], unit="ms") + timedelta(hours=3)
+        df['closeTime'] = pd.to_datetime(df["closeTime"], unit="ms") + timedelta(hours=3)
+        df['high'] = df['high'].astype('float')
+        df['open'] = df['open'].astype('float') 
+        df['close'] = df['close'].astype('float')          
+        df['low'] = df['low'].astype('float')
+        df["RSI"] = tb.rsi(df["close"],rsiPeriod)
+        
+        ## Calculate Hype Rate
+        candleTime = df['openTime'][limit-2]
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 35)
+        hypeRate = round(hypeRate,5)
+
+        ## Add to hype list
+        if hypeRate >= 0:
+            searchList[symbol] = hypeRate
+
+    ## Sort from biggest to smallest
+    searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order   
+
+    return searchList, candleTime
 
 #get_historical_data_list("Future")
 #get_symbol_list("USDT", "Spot")
