@@ -8,27 +8,27 @@
 '''
 
 from Indicators.fibonacci_retracement import calculate_fib
-from operator import index
-import array as arr
-from binance.client import Client  
-import pandas as pd 
-from user_api_key import key_id, secret_key_id
-import time   
-from telegram_bot import *
-from datetime import datetime 
-from datetime import timedelta
 from ta.trend import ema_indicator
 
-client = Client(key_id, secret_key_id) 
+from binance.client import Client  
+from user_api_key import key_id, secret_key_id
 
-islemFiyati = 0
-hedefFiyati = 0
-stopFiyati = 0
+import pandas as pd
+
+from telegram_bot import warn, send_message_to_telegram, channelAtsiz
+
+from datetime import datetime
+from datetime import timedelta
+from time import sleep
+
+
+client = Client(key_id, secret_key_id)
+
 
 #ATTRIBUTES
 kaldirac = 1
 feeOrani = 0.0004 # percent
-bantMinimumOran = 0.002
+bantMinimumOran = 0.0020
 
 baslangicPara = 111
 cuzdan = baslangicPara
@@ -56,16 +56,31 @@ toplamFee = 0
 islemKar = 0
 toplamKar = 0
 
-position = ""
-start = False
 startTime = 0
 stopTime = 0
+
+position = ""
+start = False
 islemBitti = False
+IsEmaUpdate = False
 
 # Sinyal Değerleri
 fibVal = 8
 emaVal = 5
 emaType = "open" # "open" or "close"
+
+fib_1_000_price = 0.0
+fib_0_772_price = 0.0
+fib_0_572_price = 0.0
+fib_0_500_price = 0.0
+fib_0_428_price = 0.0
+fib_0_228_price = 0.0
+fib_0_000_price = 0.0
+ema_price = 0.0
+open_price = 0.0
+high_price = 0.0
+low_price = 0.0
+close_price = 0.0
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
@@ -76,24 +91,19 @@ toplamZararKesIslemSayisi = 0
 timeFrame = 15
 symbol = "APEUSDT"
 interval = "15m"
-limit = fibVal + 2
-
-df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
-      'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
-      'taker_buy_quote_asset_volume', 'ignore']
-
+limit = (fibVal + emaVal) * 3
 
 while(True):
     if (position == ""):
         start = False
-        long_signal = False 
+        long_signal = False
         short_signal = False
-        limit = fibVal + 2
-        candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit) 
-        df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
-                                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
-                                            'taker_buy_quote_asset_volume', 'ignore']) 
-        ## Clean data 
+        limit = (fibVal + emaVal) * 3
+        candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
+        df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime',
+                                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume',
+                                            'taker_buy_quote_asset_volume', 'ignore'])
+        ## Clean data
         df['open'] = df['open'].astype('float')
         df['close'] = df['close'].astype('float')
         df['high'] = df['high'].astype('float')
@@ -109,46 +119,73 @@ while(True):
         df["FIB_0_228"] = calculate_fib(df,fibVal, 0.228)
         df["FIB_0"] = calculate_fib(df,fibVal, 0)    
 
-        bantReferans = (((df["FIB_1"][limit-1] / df["FIB_0"][limit-1]) - 1) / 7)
-        if (bantReferans >= bantMinimumOran):
-            long_signal = df["EMA"][limit-1] > df["FIB_0_500"][limit-1]   
-            short_signal = df["EMA"][limit-1] < df["FIB_0_500"][limit-1]
+        fib_1_000_price = round(df["FIB_1"][limit-1],7)
+        fib_0_772_price = round(df["FIB_0_772"][limit-1],7)
+        fib_0_572_price = round(df["FIB_0_572"][limit-1],7)
+        fib_0_500_price = round(df["FIB_0_500"][limit-1],7)
+        fib_0_428_price = round(df["FIB_0_428"][limit-1],7)
+        fib_0_228_price = round(df["FIB_0_228"][limit-1],7)
+        fib_0_000_price = round(df["FIB_0"][limit-1],7)
+        ema_price = round(df["EMA"][limit-1],4)
 
-    if (start == True):
-        limit = fibVal + 2
-        candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit) 
-        df = pd.DataFrame(candles, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 
-                                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
-                                            'taker_buy_quote_asset_volume', 'ignore']) 
-        ## Clean data 
-        df = df[['open_time', 'open', 'high', 'low', 'close', 'close_time']]       
+        open_price = round(df['open'][limit-1],7)
+        high_price = round(df['high'][limit-1],7)
+        low_price = round(df['low'][limit-1],7)
+        close_price = round(df['close'][limit-1],7)
+
+        bantReferans = (((fib_1_000_price / fib_0_000_price ) - 1) / 7)
+        if (bantReferans >= bantMinimumOran):
+            long_signal = ema_price > fib_0_500_price  
+            short_signal = ema_price < fib_0_500_price
+    elif (position != ""):
+        if (datetime.now().minute % timeFrame == 0) and (datetime.now().second == 1) and (IsEmaUpdate == False):
+            IsEmaUpdate = True
+            limit = (fibVal + emaVal) * 3
+            long_signal = False
+            short_signal = False
+        else:
+            IsEmaUpdate = False
+            limit = 2          
+
+        candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
+        df = pd.DataFrame(candles, columns=['open_time', 'open', 'high', 'low', 'close', 'volume', 'close_time',
+                                            'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume',
+                                            'taker_buy_quote_asset_volume', 'ignore'])
+        ## Clean data
+        df = df[['open_time', 'open', 'high', 'low', 'close', 'close_time']]      
         df['openTime'] = pd.to_datetime(df["open_time"], unit="ms") + timedelta(hours=3)
         df['closeTime'] = pd.to_datetime(df["close_time"], unit="ms") + timedelta(hours=3)
-        df['open'] = df['open'].astype('float') 
-        df['close'] = df['close'].astype('float') 
-        df['high'] = df['high'].astype('float') 
-        df['low'] = df['low'].astype('float') 
-        df["EMA"] = ema_indicator(df[emaType],emaVal)
-        df["FIB_0_500"] = calculate_fib(df,fibVal, 0.5)
-        long_signal = df["EMA"][limit-1] > df["FIB_0_500"][limit-1]   
-        short_signal = df["EMA"][limit-1] < df["FIB_0_500"][limit-1]
+        df['open'] = df['open'].astype('float')
+        df['close'] = df['close'].astype('float')
+        df['high'] = df['high'].astype('float')
+        df['low'] = df['low'].astype('float')
+
+        open_price = round(df['open'][limit-1],7)
+        high_price = round(df['high'][limit-1],7)
+        low_price = round(df['low'][limit-1],7)
+        close_price = round(df['close'][limit-1],7)
+
+        if (IsEmaUpdate == True):
+            df["EMA"] = ema_indicator(df[emaType],emaVal)
+            ema_price = round(df["EMA"][limit-1],4)
 
     ### Bandı ve Giriş Bilgilerini Ayarla
-    if (position == "") and (long_signal or short_signal):
+    if (position == "") and ((long_signal == True) or (short_signal == True)):
 
-        bantReferans = (((df["FIB_1"][limit-1] / df["FIB_0"][limit-1]) - 1) / 7)
+        bantReferans = (((fib_1_000_price / fib_0_000_price) - 1) / 7)
 
         if (bantReferans >= bantMinimumOran):
             start = True
             startTime =  df["openTime"][limit-1]
 
-            shortStopFiyat = df["FIB_0_572"][limit-1]
-            longKarFiyat = df["FIB_0_772"][limit-1]
-            longGirisFiyat = df["FIB_0_572"][limit-1]
-            referansOrtaFiyat = df["FIB_0_500"][limit-1]                 
-            shortGirisFiyat = df["FIB_0_428"][limit-1]           
-            shortKarFiyat = df["FIB_0_228"][limit-1]
-            longStopFiyat = df["FIB_0_428"][limit-1]   
+            referansOrtaFiyat = fib_0_500_price
+
+            longKarFiyat = fib_0_772_price
+            longGirisFiyat = fib_0_572_price
+            longStopFiyat = fib_0_428_price
+            shortStopFiyat = fib_0_572_price              
+            shortGirisFiyat = fib_0_428_price          
+            shortKarFiyat = fib_0_228_price    
 
             debugMsg = ""
             debugMsg += str(toplamIslemSayisi + 1) + ". Signal\n"
@@ -164,24 +201,24 @@ while(True):
             debugMsg += "SHORT TP\t: " + str(round(shortKarFiyat,7)) + "\n"
             debugMsg += "SHORT SL\t: " + str(round(shortStopFiyat,7)) + "\n"                                      
             debugMsg += "\n"  
-            debugMsg += "Refrence Bands\n" 
+            debugMsg += "Refrence Bands\n"
             debugMsg += "\n"  
-            debugMsg += "FIB 1.000 : " + str(df["FIB_1"][limit-1]) + "\n"
-            debugMsg += "FIB 0.772 : " + str(df["FIB_0_772"][limit-1]) + "\n"
-            debugMsg += "FIB 0.572 : " + str(df["FIB_0_572"][limit-1]) + "\n"
-            debugMsg += "FIB 0.500 : " + str(df["FIB_0_500"][limit-1]) + "\n"
-            debugMsg += "FIB 0.428 : " + str(df["FIB_0_428"][limit-1]) + "\n"
-            debugMsg += "FIB 0.228 : " + str(df["FIB_0_228"][limit-1]) + "\n"
-            debugMsg += "FIB 0.000 : " + str(df["FIB_0"][limit-1]) + "\n" 
+            debugMsg += "FIB 1.000 : " + str(fib_1_000_price) + "\n"
+            debugMsg += "FIB 0.772 : " + str(fib_0_772_price) + "\n"
+            debugMsg += "FIB 0.572 : " + str(fib_0_572_price) + "\n"
+            debugMsg += "FIB 0.500 : " + str(fib_0_500_price) + "\n"
+            debugMsg += "FIB 0.428 : " + str(fib_0_428_price) + "\n"
+            debugMsg += "FIB 0.228 : " + str(fib_0_228_price) + "\n"
+            debugMsg += "FIB 0.000 : " + str(fib_0_000_price) + "\n"
             debugMsg += "\n"
-            debugMsg += "EMA(" + str(emaVal) + ") -> " + str(round(df["EMA"][limit-1],3)) + "\n" 
-            debugMsg += "\n" 
+            debugMsg += "EMA(" + str(emaVal) + ") -> " + str(round(ema_price,3)) + "\n"
+            debugMsg += "\n"
         else:
-            start = False 
+            start = False
 
 ### LONG İŞLEM ###
     # LONG İşlem Aç
-    if start and (df["high"][limit-1] >= longGirisFiyat and longGirisFiyat >= df["low"][limit-1]) and position == "" and long_signal:
+    if (start == True) and (high_price >= longGirisFiyat and longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
         islemBitti = False
         toplamIslemSayisi = toplamIslemSayisi + 1
         islemFee = cuzdan * feeOrani * kaldirac
@@ -190,8 +227,8 @@ while(True):
         islemFiyati = longGirisFiyat
         hedefFiyati = longKarFiyat
         stopFiyati = shortGirisFiyat
-        karOrani = (longKarFiyat / longGirisFiyat) - 1 
-        debugMsg += warn + " LONG Position Open\n" 
+        karOrani = (longKarFiyat / longGirisFiyat) - 1
+        debugMsg += warn + " LONG Position Open\n"
         debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
         debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
@@ -201,7 +238,7 @@ while(True):
         debugMsg = ""  
 
     # LONG İşlem Kar Al
-    if start and (position == "Long") and (df["high"][limit-1] >= hedefFiyati and hedefFiyati >= df["low"][limit-1]):
+    if (start == True) and (position == "Long") and (high_price >= hedefFiyati and hedefFiyati >= low_price):
         islemKar = cuzdan * karOrani * kaldirac
         islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
@@ -224,7 +261,7 @@ while(True):
         toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
 
     # LONG İşlem Stop Ol
-    if start and (position == "Long") and (df["high"][limit-1] >= stopFiyati and stopFiyati >= df["low"][limit-1]) and short_signal:
+    if (start == True) and (position == "Long") and (high_price >= stopFiyati and stopFiyati >= low_price) and (short_signal == True):
         islemKar = cuzdan * (((stopFiyati - islemFiyati) / islemFiyati)) * kaldirac
         islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
@@ -240,7 +277,7 @@ while(True):
         debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t: % -" + str(round(islemKarOrani,3)) + "\n"
+        debugMsg += "Order Profit\t: % " + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
@@ -248,7 +285,7 @@ while(True):
 
 ### SHORT İŞLEM ###
     # SHORT İşlem Aç
-    if start and (df["low"][limit-1] <= shortGirisFiyat and shortGirisFiyat <= df["high"][limit-1]) and position == "" and short_signal:
+    if (start == True) and (low_price <= shortGirisFiyat and shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
         islemBitti = False
         toplamIslemSayisi = toplamIslemSayisi + 1
         islemFee = cuzdan * feeOrani * kaldirac
@@ -257,9 +294,9 @@ while(True):
         islemFiyati = shortGirisFiyat
         hedefFiyati = shortKarFiyat
         stopFiyati = longGirisFiyat
-        karOrani = (shortGirisFiyat / shortKarFiyat) - 1 
+        karOrani = (shortGirisFiyat / shortKarFiyat) - 1
 
-        debugMsg += warn + " SHORT Position Open\n" 
+        debugMsg += warn + " SHORT Position Open\n"
         debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
         debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
         debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
@@ -269,7 +306,7 @@ while(True):
         debugMsg = ""  
 
     # SHORT İşlem Kar Al
-    if start and (position == "Short") and (df["low"][limit-1] <= hedefFiyati and hedefFiyati <= df["high"][limit-1]):
+    if (start == True) and (position == "Short") and (low_price <= hedefFiyati and hedefFiyati <= high_price):
         islemKar = cuzdan * karOrani * kaldirac
         islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
@@ -292,7 +329,7 @@ while(True):
         toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
 
     # SHORT İşlem Stop Ol
-    if start and (position == "Short") and (df["low"][limit-1] <= stopFiyati and stopFiyati <= df["high"][limit-1]) and long_signal:
+    if (start == True) and (position == "Short") and (low_price <= stopFiyati and stopFiyati <= high_price) and (long_signal == True):
         islemKar = cuzdan * (((islemFiyati - stopFiyati) / islemFiyati)) * kaldirac
         islemKarOrani = (islemKar / cuzdan) * 100
         toplamKar += islemKar
@@ -308,28 +345,22 @@ while(True):
         debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t: % -" + str(round(islemKarOrani,3)) + "\n"
+        debugMsg += "Order Profit\t: % " + str(round(islemKarOrani,3)) + "\n"
 
         islemBitti = True
         start = False
         toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1
-
-    if (cuzdan + 10) < toplamFee:
-        debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
-        send_message_to_telegram(channelAtsiz, debugMsg)
-        debugMsg = "" 
-        quit()   
-     
-    if islemBitti == True:     
+   
+    if islemBitti == True:    
         debugMsg += "\n"
         debugMsg += "Report\n"
         debugMsg += "\n"
         debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + " " + str(interval) + " FIB " + str(fibVal) + " EMA" + str(emaVal) + " " + str(emaType) + "\n"
-        debugMsg += "Invest\t: " + str(round(baslangicPara,7)) + "\n"
-        debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
+        debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
+        debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
         debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
-        debugMsg += "Fund\t: " + str(round(cuzdan,7)) + "\n"
-        debugMsg += "ROI\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
+        debugMsg += "Fund\t\t: " + str(round(cuzdan,7)) + "\n"
+        debugMsg += "ROI\t\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
         debugMsg += "\n"
         debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
         debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
@@ -337,17 +368,23 @@ while(True):
         debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
         debugMsg += "Lose Orders\t\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
         send_message_to_telegram(channelAtsiz, debugMsg)
-        debugMsg = "" 
-              
+        debugMsg = ""
+             
         islemBitti = False
-        position = ""   
-        start = False         
+        position = ""  
+        start = False        
         islemKar = 0
         islemFee = 0
         islemFiyati = 0
         hedefFiyati = 0
 
-        while datetime.now().minute % timeFrame != 0: 
-            time.sleep(1)
+        while (datetime.now().minute % timeFrame != 0):
+            sleep(2)
 
-    time.sleep(0.1) 
+    if (cuzdan + 10) < toplamFee:
+        debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
+        send_message_to_telegram(channelAtsiz, debugMsg)
+        debugMsg = ""
+        quit()  
+
+    sleep(0.1) 
