@@ -60,7 +60,7 @@ emaBuy = 5     # 8 open
 emaBuyType = "open"
 emaSell = 13     # 2 close
 emaSellType = "open"
-emaSignal = 144 # 233 close
+emaSignal = 233 # 233 close
 emaSignalType = "open"
 
 # Order Amount Calculation
@@ -72,7 +72,7 @@ toplamZararKesIslemSayisi = 0
 symbol = "APEUSDT"
 interval = "5m"
 timeFrame = 5
-limit = emaSignal * 2
+limit = emaSignal * 3
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
       'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -88,7 +88,7 @@ def signal_update():
     global IsEMAUpdate
 
     IsEMAUpdate = True
-    limit = emaSignal * 2
+    limit = emaSignal * 3
     candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit) 
     df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                         'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -110,8 +110,8 @@ def signal_update():
     emaSignalPrice = df["EMASIGNAL"][limit-1]
     currentPrice = df["close"][limit-1]
 
-    long_signal = (emaBuyPrice > emaSellPrice) and (emaBuyPrice > emaSignalPrice) and (emaSellPrice > emaSignalPrice) #and (currentPrice >= emaSignalPrice)
-    short_signal = (emaBuyPrice < emaSellPrice) and (emaBuyPrice < emaSignalPrice) and (emaSellPrice < emaSignalPrice) #and (currentPrice <= emaSignalPrice)       
+    long_signal = (emaBuyPrice > emaSellPrice) and (emaBuyPrice > emaSignalPrice) and (emaSellPrice > emaSignalPrice) 
+    short_signal = (emaBuyPrice < emaSellPrice) and (emaBuyPrice < emaSignalPrice) and (emaSellPrice < emaSignalPrice)      
 
 signal_update()
 
@@ -152,7 +152,7 @@ while(True):
 
 ### LONG İŞLEM ###
     # Long İşlem Aç
-    if (start == False) and (position == "") and (long_signal == True):
+    if (start == False) and (position == "") and (long_signal == True) and (currentPrice > emaSellPrice):
         start = True
         position = "Long"    
 
@@ -217,14 +217,14 @@ while(True):
         debugMsg += "LONG Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t\t: % -" + str(round(zararOran * 100,3)) + "\n" 
+        debugMsg += "Order Profit\t\t: % " + str(round(zararOran * 100,3)) + "\n" 
 
         islemBitti = True
         toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1
 
 # SHORT İŞLEM
     # Short İşlem Aç
-    if (start == False) and (position == "") and (short_signal == True):
+    if (start == False) and (position == "") and (short_signal == True) and (currentPrice < emaSellPrice):
         start = True
         position = "Short"  
 
@@ -289,7 +289,7 @@ while(True):
         debugMsg += "SHORT Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t\t: % -" + str(round(zararOran * 100,3)) + "\n" 
+        debugMsg += "Order Profit\t\t: % " + str(round(zararOran * 100,3)) + "\n" 
 
         islemBitti = True
         toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1 
