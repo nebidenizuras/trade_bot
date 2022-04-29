@@ -23,8 +23,7 @@ from operator import index
 import array as arr
 
 from data_manager import get_symbol_list, get_calculated_hype_symbol_list
-from threading import Thread
-
+import threading
 
 client = Client(key_id, secret_key_id) 
 
@@ -68,7 +67,7 @@ emaBuy = 5     # 8 open
 emaBuyType = "open"
 emaSell = 13     # 2 close
 emaSellType = "open"
-emaSignal = 144 # 233 close
+emaSignal = 233 # 233 close
 emaSignalType = "open"
 
 # Order Amount Calculation
@@ -80,7 +79,7 @@ toplamZararKesIslemSayisi = 0
 symbol = "APEUSDT"
 interval = "5m"
 timeFrame = 5
-limit = emaSignal * 2
+limit = emaSignal * 3
 
 df = ['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
       'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -96,7 +95,7 @@ def signal_update():
     global IsEMAUpdate
 
     IsEMAUpdate = True
-    limit = emaSignal * 2
+    limit = emaSignal * 3
     candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit) 
     df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 
                                         'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume', 
@@ -123,6 +122,8 @@ def signal_update():
 
 signal_update()
 
+mutex = threading.Lock()
+
 ############################################################################################################
 # Parite Bilgileri
 symbolNew = ""
@@ -140,7 +141,9 @@ def do_work_hype_coin_scanning():
     searchList = {}
 
     searchList, candleTime  = get_calculated_hype_symbol_list(market, interval, symbolList)
+    mutex.acquire()
     symbolNew = list(searchList.keys())[0]
+    mutex.release()
 
     if(datetime.now().minute == 0):
         symbolList = get_symbol_list("USDT", "Future")
@@ -153,17 +156,19 @@ while(True):
     # Tarama yap yeni coin varsa bul
     if (isYenilemeZamani == False ) and (datetime.now().second == 1):
         isYenilemeZamani = True
-        t = Thread(target=do_work_hype_coin_scanning)
+        t = threading.Thread(target=do_work_hype_coin_scanning)
         t.start()
     elif (datetime.now().second != 1):
         isYenilemeZamani = False
 
-    if (islemBitti == False) and (start == False) and (position == ""):            
+    if (islemBitti == False) and (start == False) and (position == ""):   
+        mutex.acquire()         
         if(symbolNew != symbol):            
             symbol = symbolNew
             isYenilemeZamani = False
             IsEMAUpdate = True
             signal_update()
+        mutex.release()
 
     if(IsEMAUpdate == False) and (datetime.now().minute % timeFrame == 0) and (datetime.now().second == 1):
         IsEMAUpdate = True
@@ -201,7 +206,7 @@ while(True):
 
 ### LONG İŞLEM ###
     # Long İşlem Aç
-    if (start == False) and (position == "") and (long_signal == True):
+    if (start == False) and (position == "") and (long_signal == True) and (currentPrice > emaSellPrice):
         start = True
         position = "Long"    
 
@@ -220,8 +225,8 @@ while(True):
         debugMsg += "\n" 
         debugMsg += "\n"
         debugMsg += "Reference Bands\n" 
-        debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(round(emaBuyPrice,4)) + "\n" 
-        debugMsg += "EMA(" + str(emaSell) + ") -> " + str(round(emaSellPrice,4)) + "\n"
+        debugMsg += "EMA(" + str(emaBuy) + ")    -> " + str(round(emaBuyPrice,4)) + "\n" 
+        debugMsg += "EMA(" + str(emaSell) + ")   -> " + str(round(emaSellPrice,4)) + "\n"
         debugMsg += "EMA(" + str(emaSignal) + ") -> " + str(round(emaSignalPrice,4)) + "\n"
         debugMsg += "\n"  
         send_message_to_telegram(channelAlbizGocen, debugMsg)
@@ -266,14 +271,14 @@ while(True):
         debugMsg += "LONG Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t\t: % -" + str(round(zararOran * 100,3)) + "\n" 
+        debugMsg += "Order Profit\t\t: % " + str(round(zararOran * 100,3)) + "\n" 
 
         islemBitti = True
         toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1
 
 # SHORT İŞLEM
     # Short İşlem Aç
-    if (start == False) and (position == "") and (short_signal == True):
+    if (start == False) and (position == "") and (short_signal == True) and (currentPrice < emaSellPrice):
         start = True
         position = "Short"  
 
@@ -338,7 +343,7 @@ while(True):
         debugMsg += "SHORT Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"
         debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
         debugMsg += "Order Fee\t\t: " + str(round(islemFee,7)) + "\n"
-        debugMsg += "Order Profit\t\t: % -" + str(round(zararOran * 100,3)) + "\n" 
+        debugMsg += "Order Profit\t\t: % " + str(round(zararOran * 100,3)) + "\n" 
 
         islemBitti = True
         toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1 
@@ -348,11 +353,11 @@ while(True):
         debugMsg += "Report\n"
         debugMsg += "\n"
         debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + "x " + str(interval) + " EMA" + str(emaBuy) + " " + str(emaBuyType) + " EMA" + str(emaSell) + " " + str(emaSellType) + " EMA" + str(emaSignal) + " " + str(emaSignalType) + "\n"
-        debugMsg += "Invest\t: " + str(round(baslangicPara,7)) + "\n"
-        debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
+        debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
+        debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
         debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
-        debugMsg += "Fund\t: " + str(round(cuzdan,7)) + "\n"
-        debugMsg += "ROI\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
+        debugMsg += "Fund\t\t: " + str(round(cuzdan,7)) + "\n"
+        debugMsg += "ROI\t\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
         debugMsg += "\n"
         debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
         debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
