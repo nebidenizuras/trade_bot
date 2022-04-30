@@ -104,7 +104,7 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
     candleTime = 0
 
     # Teknik Analiz
-    rsiPeriod = 21
+    rsiPeriod = 13
     limit = rsiPeriod * 6
 
     for symbol in symbolList:
