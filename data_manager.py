@@ -130,7 +130,7 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
         
         ## Calculate Hype Rate
         candleTime = df['openTime'][limit-2]
-        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2] - 35)
+        hypeRate = (df['high'][limit-2] / df['low'][limit-2]) + abs(df['RSI'][limit-2])
         hypeRate = round(hypeRate,5)
 
         ## Add to hype list
