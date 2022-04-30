@@ -17,6 +17,9 @@ import array as arr
 from datetime import timedelta
 from telegram_bot import *
 
+
+tic = time.perf_counter()
+
 kaldirac = 1
 start = False
 islemBitti = False
@@ -312,3 +315,6 @@ debugMsg += "****************************************\n"
 print(debugMsg)
 logFileObject.write(debugMsg)
 logFileObject.close()
+
+toc = time.perf_counter()
+print(f"Backtest is finished in {toc - tic:0.8f} seconds")

@@ -58,8 +58,6 @@ toplamZararKesIslemSayisi = 0
 symbol = "APEUSDT"
 interval = "5m"
 
-#get_historical_data_symbol("Future", symbol, "20 April, 2022", "24 April, 2022", interval)
-
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = symbol + "_" + interval + ".csv"
 logFileName = "LogFile_" +  symbol + "_" + interval + ".txt"
