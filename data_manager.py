@@ -141,6 +141,3 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
     searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order   
 
     return searchList, candleTime
-
-#get_historical_data_list("Future")
-#get_symbol_list("USDT", "Spot")
