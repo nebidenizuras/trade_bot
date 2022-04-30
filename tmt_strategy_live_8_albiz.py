@@ -150,7 +150,7 @@ while(True):
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFiyati = current_price
             islemBuyuklugu = cuzdan * kaldirac
-            islemFee = islemBuyuklugu * kaldirac
+            islemFee = islemBuyuklugu * kaldirac * feeOrani
             toplamFee += islemFee            
 
             debugMsg += "Order Time\t\t: " + str(df["openTime"][limit-1]) + "\n"
@@ -202,7 +202,7 @@ while(True):
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFiyati = current_price
             islemBuyuklugu = cuzdan * kaldirac
-            islemFee = islemBuyuklugu * feeOrani
+            islemFee = islemBuyuklugu * kaldirac * feeOrani
             toplamFee += islemFee     
 
             debugMsg += "Order Time\t\t: " + str(df["openTime"][limit-1]) + "\n"
