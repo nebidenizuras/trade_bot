@@ -19,13 +19,13 @@ from data_manager import get_historical_data_symbol
 
 
 islemFiyatı = 0
-hedefFiyatı = 0
+hedefFiyati = 0
 islemBuyuklugu = 0
 
 #ATTRIBUTES
 kaldirac = 1
 feeOranı = 0.0004 # percent
-karOrani = 0.005 # percent
+karOrani = 0.0022 # percent
 
 baslangicPara = 111
 cuzdan = baslangicPara
@@ -43,16 +43,19 @@ startTime = 0
 stopTime = 0
 
 # Sinyal Değerleri
-emaBuy = 2
-emaSell = 2
-emaSignal = 34
+emaBuy = 5
+emaBuyType = "open"
+emaSell = 13    
+emaSellType = "open"
+emaSignal = 144 
+emaSignalType = "open"
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-symbol = "MTLUSDT"
+symbol = "APEUSDT"
 interval = "5m"
 
 #get_historical_data_symbol("Future", symbol, "20 April, 2022", "24 April, 2022", interval)
@@ -76,14 +79,14 @@ df['high'] = df['high'].astype('float')
 df['low'] = df['low'].astype('float')
 df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
 df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
-df["EMABUY"] = tb.ema(df["close"],emaBuy)
-df["EMASELL"] = tb.ema(df["open"],emaSell)
-df["EMASIGNAL"] = tb.ema(df["open"],emaSignal)
+df["EMABUY"] = tb.ema(df[emaBuyType],emaBuy)
+df["EMASELL"] = tb.ema(df[emaSellType],emaSell)
+df["EMASIGNAL"] = tb.ema(df[emaSignalType],emaSignal)
 
 print("Strategy Back Test is starting......")
 
 for i in range(df.shape[0]):
-    if i > (emaSignal + 2):
+    if i > emaSignal * 3: #(df.shape[0] - (2 * 5 * 12 * 24)):
         long_signal = (df["EMABUY"][i] > df["EMASELL"][i]) and (df["EMABUY"][i] > df["EMASIGNAL"][i]) and (df["EMASELL"][i] > df["EMASIGNAL"][i])
         short_signal = (df["EMABUY"][i] < df["EMASELL"][i]) and (df["EMABUY"][i] < df["EMASIGNAL"][i]) and (df["EMASELL"][i] < df["EMASIGNAL"][i])       
 
@@ -113,17 +116,17 @@ for i in range(df.shape[0]):
             toplamFee += islemFee
             position = "Long"    
             islemFiyatı = df["open"][i]
-            hedefFiyatı = islemFiyatı * (1 + karOrani)
+            hedefFiyati = islemFiyatı * (1 + karOrani)
             islemBuyuklugu = cuzdan * kaldirac
             debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
             debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyatı) + "\n"
-            debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Büyüklüğü\t: " + str(islemBuyuklugu) + "\n"
             debugMsg += "İşlem Giriş Fee\t: " + str(islemFee) + "\n"
             debugMsg += "\n"  
 
         # Long İşlem Kar Al
-        if start and (position == "Long") and (df["high"][i] > hedefFiyatı):
+        if start and (position == "Long") and (df["high"][i] > hedefFiyati):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
@@ -131,7 +134,7 @@ for i in range(df.shape[0]):
             toplamFee += islemFee
 
             debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
             debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
             debugMsg += "\n"          
@@ -142,13 +145,13 @@ for i in range(df.shape[0]):
             islemKar = 0
             islemFee = 0
             islemFiyatı = 0
-            hedefFiyatı = 0
+            hedefFiyati = 0
 
         # Long İşlem Stop Ol
         if start and (position == "Long") and short_signal:
-            hedefFiyatı = df["open"][i]
+            hedefFiyati = df["open"][i]
 
-            islemKar = cuzdan * (((hedefFiyatı - islemFiyatı) / islemFiyatı)) * kaldirac
+            islemKar = cuzdan * (((hedefFiyati - islemFiyatı) / islemFiyatı)) * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
             islemFee = cuzdan * feeOranı * kaldirac
@@ -156,7 +159,7 @@ for i in range(df.shape[0]):
 
             debugMsg += "!! LONG İşlem Stop Oldu !!\n"
             debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
             debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
             debugMsg += "\n"          
@@ -167,7 +170,7 @@ for i in range(df.shape[0]):
             islemKar = 0
             islemFee = 0
             islemFiyatı = 0
-            hedefFiyatı = 0    
+            hedefFiyati = 0    
 
     # SHORT İŞLEM
         # Short İşlem Aç
@@ -177,17 +180,17 @@ for i in range(df.shape[0]):
             toplamFee += islemFee
             position = "Short"    
             islemFiyatı = df["open"][i]
-            hedefFiyatı = islemFiyatı * (1 - karOrani)
+            hedefFiyati = islemFiyatı * (1 - karOrani)
             islemBuyuklugu = cuzdan * kaldirac
             debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
             debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyatı) + "\n"
-            debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Hedef Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Büyüklüğü\t: " + str(islemBuyuklugu) + "\n"
             debugMsg += "İşlem Giriş Fee\t: " + str(islemFee) + "\n"
             debugMsg += "\n"  
 
         # Short İşlem Kar Al
-        if start and (position == "Short") and (df["low"][i] < hedefFiyatı):
+        if start and (position == "Short") and (df["low"][i] < hedefFiyati):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
@@ -195,7 +198,7 @@ for i in range(df.shape[0]):
             toplamFee += islemFee
 
             debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Kar Al Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
             debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
             debugMsg += "\n"          
@@ -206,13 +209,13 @@ for i in range(df.shape[0]):
             islemKar = 0
             islemFee = 0
             islemFiyatı = 0
-            hedefFiyatı = 0
+            hedefFiyati = 0
 
         # Short İşlem Stop Ol
         if start and (position == "Short") and long_signal:
-            hedefFiyatı = df["open"][i]
+            hedefFiyati = df["open"][i]
 
-            islemKar = cuzdan * (((islemFiyatı - hedefFiyatı) / islemFiyatı)) * kaldirac
+            islemKar = cuzdan * (((islemFiyatı - hedefFiyati) / islemFiyatı)) * kaldirac
             toplamKar += islemKar
             cuzdan = cuzdan + islemKar
             islemFee = cuzdan * feeOranı * kaldirac
@@ -220,7 +223,7 @@ for i in range(df.shape[0]):
 
             debugMsg += "!! SHORT İşlem Stop Oldu !!\n"
             debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyatı) + "\n"
+            debugMsg += "İşlem Stop Fiyatı\t: " + str(hedefFiyati) + "\n"
             debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
             debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
             debugMsg += "\n"          
@@ -231,7 +234,7 @@ for i in range(df.shape[0]):
             islemKar = 0
             islemFee = 0
             islemFiyatı = 0
-            hedefFiyatı = 0    
+            hedefFiyati = 0    
          
         #print(debugMsg)    
         logFileObject.write(debugMsg)
