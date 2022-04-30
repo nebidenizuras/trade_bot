@@ -155,7 +155,7 @@ while(True):
 
             debugMsg += "Order Time\t\t: " + str(df["openTime"][limit-1]) + "\n"
             debugMsg += "LONG Order Price\t: " + str(round(islemFiyati,7)) + "\n"
-            debugMsg += "LONG Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
+            #debugMsg += "LONG Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
             debugMsg += "Order Fee\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
@@ -207,7 +207,7 @@ while(True):
 
             debugMsg += "Order Time\t\t: " + str(df["openTime"][limit-1]) + "\n"
             debugMsg += "SHORT Order Price\t: " + str(round(islemFiyati,7)) + "\n"
-            debugMsg += "SHORT Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
+            #debugMsg += "SHORT Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
             debugMsg += "Order Fee\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
@@ -250,7 +250,7 @@ while(True):
             debugMsg += "\n"
             debugMsg += "Report\n"
             debugMsg += "\n"
-            debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + "x " + str(interval) + " EMA" + str(emaBuy) + " " + str(emaBuyType) + " EMA" + str(emaSell) + " " + str(emaSellType) + " EMA" + str(emaSignal) + " " + str(emaSignalType) + "\n"
+            debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + "x " + str(interval) + " EMA" + str(emaBuy) + " " + str(emaBuyType) + " EMA" + str(emaSell) + " " + str(emaSellType) + "\n"
             debugMsg += "Invest\t: " + str(round(baslangicPara,7)) + "\n"
             debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
             debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
