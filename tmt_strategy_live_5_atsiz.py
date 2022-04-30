@@ -65,7 +65,7 @@ islemBitti = False
 
 # Sinyal Değerleri
 fibVal = 5
-emaVal = 5
+emaVal = 3
 emaType = "close" # "open" or "close"
 
 fib_1_000_price = 0.0

@@ -5,6 +5,7 @@
 - EMA8 değeri FIB 0.5 altında ise, short işleme değmişsem short girerim (FIB 0.428)
   FIB 0.228 de kar alırım
 - Stop noktaları diğer yön işlemin açıldığı yer ve eması 0.5'e uyumlu ise
+- EMA3 ile sinyal yapılır.
 '''
 
 from operator import index
@@ -15,8 +16,8 @@ import os
 from Indicators.fibonacci_retracement import calculate_fib
 import array as arr
 from datetime import timedelta
-from telegram_bot import *
-
+from telegram_bot import warn
+import time
 
 tic = time.perf_counter()
 
@@ -60,7 +61,7 @@ stopTime = 0
 
 # Sinyal Değerleri
 fibVal = 5
-emaVal = 5
+emaVal = 3
 emaType = "close" # "open" or "close"
 
 # Order Amount Calculation
@@ -68,7 +69,7 @@ toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-symbol = "BTCUSDT"
+symbol = "APEUSDT"
 interval = "15m"
 timeFrame = 15
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
