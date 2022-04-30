@@ -21,7 +21,7 @@ kaldirac = 1
 start = False
 islemBitti = False
 
-bantMinimumOran = 0.002
+bantMinimumOran = 0.001
 bantReferans = 0
 cikisOrani = 3 * bantReferans
 girisOrani = bantReferans / 2
@@ -56,16 +56,16 @@ startTime = 0
 stopTime = 0
 
 # Sinyal Değerleri
-fibVal = 8
+fibVal = 5
 emaVal = 5
-emaType = "open" # "open" or "close"
+emaType = "close" # "open" or "close"
 
 # Order Amount Calculation
 toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-symbol = "APEUSDT"
+symbol = "BTCUSDT"
 interval = "15m"
 timeFrame = 15
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
