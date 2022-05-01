@@ -62,7 +62,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "AVAXUSDT"
+symbol = "NEARUSDT"
 interval = "1m"
 timeFrame = 1
 limit = emaSell * 4
@@ -235,6 +235,11 @@ while(True):
             debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"          
             send_message_to_telegram(channelAlbiz, debugMsg)
             debugMsg = "" 
+
+            # Zarar Kes yaparak Stop olduysak yeni mumu bekle
+            if(islemKar < 0):
+                while(0 <= datetime.now().second <= 1):
+                    sleep(1)                    
                 
             islemBitti = False
             position = ""   
@@ -250,7 +255,7 @@ while(True):
             debugMsg = "" 
             quit() 
 
-        sleep(0.5) 
+        sleep(1) 
     except Exception as e:
         debugMsg = "Error : " + str(e) + "\n\n"
         debugMsg += warn + "\nSistem Durduruluyor...\n" + warn

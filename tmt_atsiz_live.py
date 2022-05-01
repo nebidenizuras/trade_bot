@@ -88,7 +88,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "APEUSDT"
+symbol = "NEARUSDT"
 interval = "15m"
 limit = emaVal * 5
 
@@ -380,8 +380,9 @@ while(True):
             islemFiyati = 0
             hedefFiyati = 0
 
-            while (datetime.now().minute % timeFrame != 0):
-                sleep(2)
+            ## Yeni mumun açılmasını bekle, tekrara düşmemek için
+            while (datetime.now().minute % timeFrame != 0) and (datetime.now().second > 1):
+                sleep(1)
 
         if (cuzdan + 10) < toplamFee:
             debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
