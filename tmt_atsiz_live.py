@@ -186,6 +186,7 @@ while(True):
 
                 debugMsg = ""
                 debugMsg += str(toplamIslemSayisi + 1) + ". Signal\n"
+                debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
                 debugMsg += "\n"  
                 debugMsg += "Trade Band\t: % " + str(round(bantReferans * 100, 3)) + "\n"
                 debugMsg += "Pivot Price\t: " + str(round(referansOrtaFiyat,7)) + "\n"
