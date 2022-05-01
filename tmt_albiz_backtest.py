@@ -3,17 +3,15 @@
 - EMA 3 Close < EMA 8 close ise short gir, long'a dönerse kapat
 '''
 
-from operator import index
-from numpy import short
 import pandas_ta as tb
 import pandas as pd
-import csv
+
 import os
-from Indicators.fibonacci_retracement import calculate_fib
-import array as arr
+
 from datetime import timedelta
-from data_manager import get_historical_data_symbol
 import time
+
+from telegram_bot import warn
 
 tic = time.perf_counter()
 
@@ -52,8 +50,8 @@ toplamIslemSayisi = 0
 toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
-symbol = "BTCDOMUSDT"
-interval = "1m"
+symbol = "APEUSDT"
+interval = "15m"
 
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = symbol + "_" + interval + ".csv"
@@ -63,7 +61,7 @@ if os.path.isfile(logFileName):
     os.remove(logFileName)
 logFileObject = open(logFileName, 'a', encoding="utf-8")
 
-print("Data is preparing......")
+print("Data is preparing......\n")
 
 attributes = ["openTime","open","high","low","close","volume","closeTime","2","3","4","5","6"]
 df = pd.read_csv(csvName, names = attributes)
@@ -77,7 +75,7 @@ df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3
 df["EMABUY"] = tb.ema(df[emaBuyType],emaBuy)
 df["EMASELL"] = tb.ema(df[emaSellType],emaSell)
 
-print("Strategy Back Test is starting......")
+print("Strategy Back Test is starting......\n")
 
 for i in range(df.shape[0]):
     if i > (emaSell * 3): 
@@ -91,17 +89,14 @@ for i in range(df.shape[0]):
         if (start == False) and (position == "") and ((long_signal == True) or (short_signal == True)): 
             start = True
             startTime =  df["openTime"][i]
-            debugMsg += "---------------------------------------\n" 
-            debugMsg += "Sinyal Oluştu ->\n" + str(symbol) + " " + str(interval) + "\n"
-            debugMsg += str(toplamIslemSayisi + 1) + ". İşlem Sinyali : "
+            debugMsg = "---------------------------------------\n" 
+            debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
+            debugMsg += warn +  " " + str(toplamIslemSayisi + 1) + ". Signal "
             if long_signal:
                 debugMsg += "LONG\n"
             elif short_signal:
                 debugMsg += "SHORT\n"
             debugMsg += "\n"
-            debugMsg += "EMA(" + str(emaBuy) + ")  -> " + str(df["EMABUY"][i]) + "\n" 
-            debugMsg += "EMA(" + str(emaSell) + ") -> " + str(df["EMASELL"][i]) + "\n"
-            debugMsg += "\n"  
 
     # LONG İŞLEM
         # Long İşlem Aç
@@ -114,10 +109,15 @@ for i in range(df.shape[0]):
             islemFee = islemBuyuklugu * feeOrani
             toplamFee += islemFee       
 
-            debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
-            debugMsg += "İşlem Büyüklüğü\t: " + str(islemBuyuklugu) + "\n"
-            debugMsg += "İşlem Giriş Fee\t: " + str(islemFee) + "\n"
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "LONG Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+            debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
+            debugMsg += "\n" 
+            debugMsg += "\n"
+            debugMsg += "Reference Bands\n" 
+            debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(round(ema_buy_price,4)) + "\n" 
+            debugMsg += "EMA(" + str(emaSell) + ") -> " + str(round(ema_sell_price,4)) + "\n"
             debugMsg += "\n"  
 
         # Long İşlem Kapat
@@ -130,16 +130,23 @@ for i in range(df.shape[0]):
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
 
-            debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Çıkış Fiyatı\t: " + str(hedefFiyati) + "\n"
-            debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
-            debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
-            debugMsg += "\n"          
-
-            if(islemKar > 0):
+            debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
+            if (islemKar > 0):
                 toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
+                debugMsg += warn + " " + str(toplamIslemSayisi) + " Signal LONG Close Take Profit\n"
             else:
                 toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1
+                debugMsg += warn + " " + str(toplamIslemSayisi) + " Signal LONG Close Stop Loss\n"            
+            debugMsg += "\n"
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "LONG Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+            if (islemKar > 0):
+                debugMsg += "LONG Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
+            else:
+                debugMsg += "LONG Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"            
+            debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,7)) + "\n"
+            debugMsg += "Order Profit\t\t: % " + str(round(karOrani * 100,3)) + "\n"
 
             position = ""   
             start = False 
@@ -159,11 +166,16 @@ for i in range(df.shape[0]):
             islemFee = islemBuyuklugu * feeOrani
             toplamFee += islemFee              
                       
-            debugMsg += "İşlem Giriş Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Giriş Fiyatı\t: " + str(islemFiyati) + "\n"
-            debugMsg += "İşlem Büyüklüğü\t: " + str(islemBuyuklugu) + "\n"
-            debugMsg += "İşlem Giriş Fee\t: " + str(islemFee) + "\n"
-            debugMsg += "\n"  
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "SHORT Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+            debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
+            debugMsg += "\n" 
+            debugMsg += "\n"
+            debugMsg += "Reference Bands\n" 
+            debugMsg += "EMA(" + str(emaBuy) + ") -> " + str(round(ema_buy_price,4)) + "\n" 
+            debugMsg += "EMA(" + str(emaSell) + ") -> " + str(round(ema_sell_price,4)) + "\n"
+            debugMsg += "\n" 
 
         # Short İşlem Kapat
         if (start == True) and (position == "Short") and (long_signal == True):
@@ -175,16 +187,23 @@ for i in range(df.shape[0]):
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
 
-            debugMsg += "İşlem Çıkış Zamanı\t: " + str(df["openTime"][i]) + "\n"
-            debugMsg += "İşlem Çıkış Fiyatı\t: " + str(hedefFiyati) + "\n"
-            debugMsg += "İşlem Çıkış Fee\t: " + str(islemFee) + "\n" 
-            debugMsg += "İşlem Kar\t\t: " + str(islemKar) + "\n"         
-            debugMsg += "\n"          
-
-            if(islemKar > 0):
+            debugMsg += "Run -> " + str(symbol) + " " + str(interval) + "\n"
+            if (islemKar > 0):
                 toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
+                debugMsg += warn + " " + str(toplamIslemSayisi) + " Signal SHORT Close Take Profit\n"
             else:
                 toplamZararKesIslemSayisi = toplamZararKesIslemSayisi + 1
+                debugMsg += warn + " " + str(toplamIslemSayisi) + " Signal SHORT Close Stop Loss\n"            
+            debugMsg += "\n"
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "SHORT Order Price\t: " + str(round(islemFiyati,7)) + "\n"
+            if (islemKar > 0):
+                debugMsg += "SHORT Order TP\t\t: " + str(round(hedefFiyati,7)) + "\n"
+            else:
+                debugMsg += "SHORT Order SL\t\t: " + str(round(hedefFiyati,7)) + "\n"            
+            debugMsg += "Order LOT/FIAT\t\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,7)) + "\n"
+            debugMsg += "Order Profit\t\t: % " + str(round(karOrani * 100,3)) + "\n"  
 
             position = ""   
             start = False 
@@ -202,14 +221,15 @@ for i in range(df.shape[0]):
             quit()   
 
 debugMsg = "****************************************\n"
+debugMsg += "\n"
 debugMsg += "Report\n"
 debugMsg += "\n"
-debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + "x " + str(interval) + " EMA" + str(emaBuy) + " " + str(emaBuyType) + " EMA" + str(emaSell) + " " + str(emaSellType) + "\n"
-debugMsg += "Invest\t: " + str(round(baslangicPara,7)) + "\n"
-debugMsg += "ROI\t: " + str(round(toplamKar,7)) + "\n"
+debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") EMA" + str(emaBuy) + " " + str(emaBuyType) + " EMA" + str(emaSell) + " " + str(emaSellType) + "\n"
+debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
+debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
 debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
-debugMsg += "Fund\t: " + str(round(cuzdan,7)) + "\n"
-debugMsg += "ROI\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
+debugMsg += "Fund\t\t: " + str(round(cuzdan,7)) + "\n"
+debugMsg += "ROI\t\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
 debugMsg += "\n"
 debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
 debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
