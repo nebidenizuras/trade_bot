@@ -65,7 +65,7 @@ islemBitti = False
 
 # Sinyal Değerleri
 fibVal = 5
-emaVal = 3
+emaVal = 5
 emaType = "close" # "open" or "close"
 
 fib_1_000_price = 0.0
@@ -87,9 +87,8 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-timeFrame = 15
-symbol = "APEUSDT"
-interval = "15m"
+symbol = "NEARUSDT"
+interval = "5m"
 
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
 csvName = symbol + "_" + interval + ".csv"
