@@ -1,10 +1,11 @@
 '''
 - Bu stratejide işleme giriş bandı Fibonacci kanalına göre belirlenmektedir.
-- EMA8 değeri FIB 0.5 üzerinde ise, long işleme değmişsem long girerim (FIB 0.572)
+- EMA değeri FIB 0.5 üzerinde ise, long işleme değmişsem long girerim (FIB 0.572)
   FIB 0.772 de kar alırım
-- EMA8 değeri FIB 0.5 altında ise, short işleme değmişsem short girerim (FIB 0.428)
+- EMA değeri FIB 0.5 altında ise, short işleme değmişsem short girerim (FIB 0.428)
   FIB 0.228 de kar alırım
 - Stop noktaları diğer yön işlemin açıldığı yer ve eması 0.5'e uyumlu ise
+- EMA3 ile sinyal yapılır.
 '''
 
 from Indicators.fibonacci_retracement import calculate_fib
@@ -21,9 +22,7 @@ from datetime import datetime
 from datetime import timedelta
 from time import sleep
 
-
 client = Client(key_id, secret_key_id)
-
 
 #ATTRIBUTES
 kaldirac = 1
@@ -44,6 +43,7 @@ longStopFiyat = 0
 shortKarFiyat = 0
 longKarFiyat = 0
 emaFiyat = 0
+islemBuyuklugu = 0
 karOrani = 0
 
 islemFiyati = 0
@@ -217,14 +217,17 @@ while(True):
         # LONG İşlem Aç
         if (start == True) and (high_price >= longGirisFiyat and longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
             islemBitti = False
+            position = "Long"  
+
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
-            position = "Long"  
             islemFiyati = longGirisFiyat
             hedefFiyati = longKarFiyat
             stopFiyati = shortGirisFiyat
+            islemBuyuklugu = cuzdan * kaldirac
             karOrani = (longKarFiyat / longGirisFiyat) - 1
+
             debugMsg += warn + " LONG Position Open\n"
             debugMsg += "Order Time\t: " + str(df["openTime"][limit-1]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
@@ -237,8 +240,8 @@ while(True):
         # LONG İşlem Kar Al
         if (start == True) and (position == "Long") and (high_price >= hedefFiyati and hedefFiyati >= low_price):
             islemKar = cuzdan * karOrani * kaldirac
-            islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
+            islemKarOrani = (islemKar / cuzdan) * 100
             cuzdan = cuzdan + islemKar
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
@@ -284,13 +287,15 @@ while(True):
         # SHORT İşlem Aç
         if (start == True) and (low_price <= shortGirisFiyat and shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
             islemBitti = False
+            position = "Short"  
+
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
-            position = "Short"  
             islemFiyati = shortGirisFiyat
             hedefFiyati = shortKarFiyat
             stopFiyati = longGirisFiyat
+            islemBuyuklugu = cuzdan * kaldirac
             karOrani = (shortGirisFiyat / shortKarFiyat) - 1
 
             debugMsg += warn + " SHORT Position Open\n"
@@ -305,8 +310,8 @@ while(True):
         # SHORT İşlem Kar Al
         if (start == True) and (position == "Short") and (low_price <= hedefFiyati and hedefFiyati <= high_price):
             islemKar = cuzdan * karOrani * kaldirac
-            islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
+            islemKarOrani = (islemKar / cuzdan) * 100
             cuzdan = cuzdan + islemKar
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
@@ -352,7 +357,7 @@ while(True):
             debugMsg += "\n"
             debugMsg += "Report\n"
             debugMsg += "\n"
-            debugMsg += "Strategy : " + str(symbol) + " " + str(kaldirac) + " " + str(interval) + " FIB " + str(fibVal) + " EMA" + str(emaVal) + " " + str(emaType) + "\n"
+            debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") (FIB " + str(fibVal) + ") (EMA " + str(emaVal) + " " + str(emaType) + ")\n"
             debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
             debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
             debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
@@ -361,9 +366,9 @@ while(True):
             debugMsg += "\n"
             debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
             debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
-            debugMsg += "SL Orders\t\t: " + str(toplamZararKesIslemSayisi) + "\n"
+            debugMsg += "SL Orders\t: " + str(toplamZararKesIslemSayisi) + "\n"
             debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
-            debugMsg += "Lose Orders\t\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
+            debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
             send_message_to_telegram(channelAtsiz, debugMsg)
             debugMsg = ""
                 
