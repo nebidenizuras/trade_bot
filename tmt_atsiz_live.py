@@ -88,7 +88,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "NEARUSDT"
+symbol = "APEUSDT"
 interval = "15m"
 limit = emaVal * 5
 

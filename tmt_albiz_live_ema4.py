@@ -70,7 +70,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "NEARUSDT"
+symbol = "APEUSDT"
 interval = "1m"
 timeFrame = 1
 limit = emaShort * 4
