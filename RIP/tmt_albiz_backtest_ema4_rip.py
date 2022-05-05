@@ -18,6 +18,7 @@ from datetime import timedelta
 from data_manager import get_historical_data_symbol
 
 
+
 islemFiyatı = 0
 hedefFiyati = 0
 islemBuyuklugu = 0
@@ -47,9 +48,9 @@ emaBuy = 3
 emaBuyType = "close"
 emaSell = 8    
 emaSellType = "close"
-emaLongStopSignal = 5
+emaLongStopSignal = 1
 emaLongStopSignalType = "low"
-emaShortStopSignal = 13
+emaShortStopSignal = 1
 emaShortStopSignalType = "high"
 
 # Order Amount Calculation
@@ -93,8 +94,8 @@ for i in range(df.shape[0]):
     if i > emaSell * 3: #(df.shape[0] - (2 * 5 * 12 * 24)):
         long_signal = (df["EMALong"][i] > df["EMAShort"][i]) #and (df["EMALong"][i] > df["EMALongStop"][i]) and (df["EMAShort"][i] > df["EMALongStop"][i])
         short_signal = (df["EMALong"][i] < df["EMAShort"][i]) #and (df["EMALong"][i] < df["EMALongStop"][i]) and (df["EMAShort"][i] < df["EMALongStop"][i])       
-        long_stop_price = df["EMALongStop"][i]
-        short_stop_price = df["EMAShortStop"][i]
+        long_stop_price = df["EMALongStop"][i-1]
+        short_stop_price = df["EMAShortStop"][i-1]
 
         ### Giriş Bilgilerini Ayarla
         if (position == "") and (long_signal or short_signal):
