@@ -65,7 +65,7 @@ islemBitti = False
 
 # Sinyal Değerleri
 fibVal = 5
-emaVal = 5
+emaVal = 2
 emaType = "close" # "open" or "close"
 
 fib_1_000_price = 0.0
@@ -88,7 +88,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 symbol = "NEARUSDT"
-interval = "5m"
+interval = "15m"
 
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
 csvName = symbol + "_" + interval + ".csv"
@@ -189,7 +189,7 @@ for i in range(df.shape[0]):
                 start = False   
     
         # LONG İşleme Gir
-        if (start == True) and (high_price >= longGirisFiyat and longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
+        if (start == True) and (high_price >= longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
             islemBitti = False
             position = "Long"  
 
@@ -211,7 +211,7 @@ for i in range(df.shape[0]):
             debugMsg += "\n"
 
         # LONG Kar Al
-        if (start == True) and (position == "Long") and (high_price >= hedefFiyati and hedefFiyati >= low_price):
+        if (start == True) and (position == "Long") and (high_price >= hedefFiyati >= low_price):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -236,7 +236,7 @@ for i in range(df.shape[0]):
             logFileObject.write(debugMsg)
 
         # LONG Stop Ol
-        if (start == True) and (position == "Long") and (high_price >= stopFiyati and stopFiyati >= low_price) and (short_signal == True):
+        if (start == True) and (position == "Long") and (((high_price >= stopFiyati >= low_price) and (short_signal == True)) or (low_price <= fib_0_000_price)):
             islemKar = cuzdan * (((stopFiyati - islemFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
@@ -261,7 +261,7 @@ for i in range(df.shape[0]):
             logFileObject.write(debugMsg)
 
         # SHORT İşleme Gir
-        if (start == True) and (low_price <= shortGirisFiyat and shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
+        if (start == True) and (low_price <= shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
             islemBitti = False
             position = "Short"  
 
@@ -283,7 +283,7 @@ for i in range(df.shape[0]):
             debugMsg += "\n"            
 
         # SHORT Kar Al
-        if (start == True) and (position == "Short") and (low_price <= hedefFiyati and hedefFiyati <= high_price):
+        if (start == True) and (position == "Short") and (low_price <= hedefFiyati <= high_price):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -308,7 +308,7 @@ for i in range(df.shape[0]):
             logFileObject.write(debugMsg)
 
         # SHORT Stop Ol
-        if (start == True) and (position == "Short") and (low_price <= stopFiyati and stopFiyati <= high_price) and (long_signal == True):
+        if (start == True) and (position == "Short") and (((low_price <= stopFiyati <= high_price) and (long_signal == True)) or (high_price >= fib_1_000_price)):
             islemKar = cuzdan * (((islemFiyati - stopFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
