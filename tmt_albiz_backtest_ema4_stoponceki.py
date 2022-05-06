@@ -109,8 +109,10 @@ for i in range(df.shape[0]):
     if i > emaShort * 4:
         ema_sell_price = df["EMAShort"][i-1]
         ema_buy_price = df["EMALong"][i-1]
-        long_stop_price = df["EMALow"][i-2]
-        short_stop_price = df["EMAHigh"][i-2]
+        #long_stop_price = df["EMALow"][i-2]
+        #short_stop_price = df["EMAHigh"][i-2]
+        long_stop_price = (df["EMALow"][i-2] * (1 - karOrani))
+        short_stop_price = (df["EMAHigh"][i-2] * (1 + karOrani))
 
         long_signal = (ema_buy_price > ema_sell_price)
         short_signal = (ema_buy_price < ema_sell_price)
@@ -141,17 +143,17 @@ for i in range(df.shape[0]):
             islemFee = islemBuyuklugu * feeOrani
             toplamFee += islemFee            
 
-            debugMsg += "Order Time\t\t: " + str(df["openTime"][i-1]) + "\n"
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i-1]) + "\n"
             debugMsg += "LONG Order Price\t: " + str(round(islemFiyati,7)) + "\n"
-            debugMsg += "LONG TP Price\t: " + str(round(hedefFiyati,7)) + "\n"
+            debugMsg += "LONG TP Price\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
-            debugMsg += "Order Fee\t\t: " + str(round(islemFee,4)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
             debugMsg += "\n"
             debugMsg += "Reference Bands\n" 
+            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLong) + ") Long -> " + str(round(ema_buy_price,4)) + "\n" 
             debugMsg += "EMA(" + str(emaShort) + ") Short -> " + str(round(ema_sell_price,4)) + "\n"
-            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLow) + ") Low -> " + str(round(long_stop_price,4)) + "\n"
             debugMsg += "\n"  
 
@@ -215,16 +217,16 @@ for i in range(df.shape[0]):
 
             debugMsg += "Order Time\t\t\t: " + str(df["openTime"][i-1]) + "\n"
             debugMsg += "SHORT Order Price\t: " + str(round(islemFiyati,7)) + "\n"
-            debugMsg += "SHORT TP Price\t: " + str(round(hedefFiyati,7)) + "\n"
+            debugMsg += "SHORT TP Price\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
             debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
             debugMsg += "\n"
             debugMsg += "Reference Bands\n" 
-            debugMsg += "EMA(" + str(emaLong) + ") -> " + str(round(ema_buy_price,4)) + "\n" 
-            debugMsg += "EMA(" + str(emaShort) + ") -> " + str(round(ema_sell_price,4)) + "\n"
-            debugMsg += "EMA(" + str(emaHigh) + ") -> " + str(round(long_stop_price,4)) + "\n"
-            debugMsg += "EMA(" + str(emaLow) + ") -> " + str(round(short_stop_price,4)) + "\n"
+            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
+            debugMsg += "EMA(" + str(emaLong) + ") Long -> " + str(round(ema_buy_price,4)) + "\n" 
+            debugMsg += "EMA(" + str(emaShort) + ") Short -> " + str(round(ema_sell_price,4)) + "\n"
+            debugMsg += "EMA(" + str(emaLow) + ") Low -> " + str(round(long_stop_price,4)) + "\n"
             debugMsg += "\n"  
 
         # Short İşlem Kar Al
@@ -288,21 +290,23 @@ for i in range(df.shape[0]):
         if (cuzdan < 0):
             debugMsg = ""
             debugMsg += "\n"
-            debugMsg += "****************************************\n"
-            debugMsg += "Parite : " + symbol + "\nZaman Dilimi : " + interval + "\n"
-            debugMsg += "Strateji -> EMA" + str(emaLong) +  " Open / EMA" + str(emaShort) + " Close / EMA" + str(emaHigh) + " Open\n"
-            debugMsg += "Başlangıç Para($)\t: " + str(baslangicPara) + "\n"
-            debugMsg += "Kar($)\t\t\t: " + str(cuzdan - baslangicPara) + "\n"
-            debugMsg += "Toplam Ödenen Fee($)\t: " + str(toplamFee) + "\n"
-            debugMsg += "Son Para($)\t\t: " + str(cuzdan - toplamFee) + "\n"
-            debugMsg += "Kazanç\t\t\t: % " + str(((cuzdan - baslangicPara - toplamFee) / baslangicPara) * 100) + "\n"
-            debugMsg += "Kaldıraç\t\t: " + str(kaldirac) + "x\n"
-            debugMsg += "Kar Oranı\t\t: % " + str(((cuzdan - baslangicPara - toplamFee) / baslangicPara)) + "\n"
-            debugMsg += "Toplam İşlem Adet\t: " + str(toplamIslemSayisi) + "\n"
-            debugMsg += "Karlı İşlem Adet\t: " + str(toplamKarliIslemSayisi) + "\n"
-            debugMsg += "Stop İşlem Adet\t\t: " + str(toplamZararKesIslemSayisi) + "\n"
-            debugMsg += "Kar Başarı Oranı\t: % " + str((toplamKarliIslemSayisi / toplamIslemSayisi) * 100) + "\n"
-            debugMsg += "Zarar Kes Oranı\t\t: % " + str((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100) + "\n"
+            debugMsg = "****************************************\n"
+            debugMsg += "\n"
+            debugMsg += "Report\n"
+            debugMsg += "\n"
+            debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") (EMA" + str(emaLong) + " " + str(emaLongType) + ") (EMA" + str(emaShort) + " " + str(emaShortType) + ") (EMA" + str(emaHigh) + " " + str(emaHighType) + ") (EMA" + str(emaLow) + " " + str(emaLowType) +  ")\n"
+            debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
+            debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
+            debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
+            debugMsg += "Fund\t\t: " + str(round(cuzdan,7)) + "\n"
+            debugMsg += "ROI\t\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
+            debugMsg += "Net ROI\t\t: % " + str(round((((cuzdan-toplamFee) - baslangicPara) / baslangicPara) * 100,3)) + "\n"
+            debugMsg += "\n"
+            debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
+            debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
+            debugMsg += "SL Orders\t: " + str(toplamZararKesIslemSayisi) + "\n"
+            debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
+            debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"        
             debugMsg += "****************************************\n"
             print(debugMsg)
             logFileObject.write(debugMsg)

@@ -70,7 +70,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "APEUSDT"
+symbol = "GMTUSDT"
 interval = "1m"
 timeFrame = 1
 limit = emaShort * 4
@@ -100,8 +100,10 @@ while(True):
 
         ema_sell_price = df["EMAShort"][limit-1]
         ema_buy_price = df["EMALong"][limit-1]
-        long_stop_price = df["EMALow"][limit-2]
-        short_stop_price = df["EMAHigh"][limit-2]
+        long_stop_price = (df["EMALow"][limit-2] * (1 - karOrani))
+        short_stop_price = (df["EMAHigh"][limit-2] * (1 + karOrani))
+        #long_stop_price = df["EMALow"][limit-2]
+        #short_stop_price = df["EMAHigh"][limit-2]
         current_price = df["close"][limit-1]
 
         long_signal = (ema_buy_price > ema_sell_price)
@@ -133,19 +135,19 @@ while(True):
             islemFee = islemBuyuklugu * feeOrani
             toplamFee += islemFee            
 
-            debugMsg += "Order Time\t\t: " + str(df["openTime"][limit-1]) + "\n"
+            debugMsg += "Order Time\t\t\t: " + str(df["openTime"][limit-1]) + "\n"
             debugMsg += "LONG Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "LONG TP Price\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
-            debugMsg += "Order Fee\t\t: " + str(round(islemFee,4)) + "\n"
+            debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
             debugMsg += "\n"
             debugMsg += "Reference Bands\n" 
+            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLong) + ") Long -> " + str(round(ema_buy_price,4)) + "\n" 
             debugMsg += "EMA(" + str(emaShort) + ") Short -> " + str(round(ema_sell_price,4)) + "\n"
-            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLow) + ") Low -> " + str(round(long_stop_price,4)) + "\n"
-            debugMsg += "\n"  
+            debugMsg += "\n" 
             send_message_to_telegram(channelAlbiz, debugMsg)
             debugMsg = ""  
 
@@ -209,15 +211,15 @@ while(True):
 
             debugMsg += "Order Time\t\t\t: " + str(df["openTime"][limit-1]) + "\n"
             debugMsg += "SHORT Order Price\t: " + str(round(islemFiyati,7)) + "\n"
-            debugMsg += "SHORT TP Price\t: " + str(round(hedefFiyati,7)) + "\n"
+            debugMsg += "SHORT TP Price\t\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t\t: " + str(round(islemBuyuklugu,7)) + "\n"
             debugMsg += "Order Fee\t\t\t: " + str(round(islemFee,4)) + "\n"
             debugMsg += "\n" 
             debugMsg += "\n"
             debugMsg += "Reference Bands\n" 
+            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLong) + ") Long -> " + str(round(ema_buy_price,4)) + "\n" 
             debugMsg += "EMA(" + str(emaShort) + ") Short -> " + str(round(ema_sell_price,4)) + "\n"
-            debugMsg += "EMA(" + str(emaHigh) + ") High -> " + str(round(short_stop_price,4)) + "\n"
             debugMsg += "EMA(" + str(emaLow) + ") Low -> " + str(round(long_stop_price,4)) + "\n"
             debugMsg += "\n"   
             send_message_to_telegram(channelAlbiz, debugMsg)
@@ -273,23 +275,23 @@ while(True):
             debugMsg += "\n"
             debugMsg += "Report\n"
             debugMsg += "\n"
-            debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") EMA" + str(emaLong) + " " + str(emaLongType) + " EMA" + str(emaShort) + " " + str(emaShortType) + "\n"
+            debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") (EMA" + str(emaLong) + " " + str(emaLongType) + ") (EMA" + str(emaShort) + " " + str(emaShortType) + ") (EMA" + str(emaHigh) + " " + str(emaHighType) + ") (EMA" + str(emaLow) + " " + str(emaLowType) +  ")\n"
             debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
             debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"
             debugMsg += "Total Fee\t: " + str(round(toplamFee,3)) + "\n"
             debugMsg += "Fund\t\t: " + str(round(cuzdan,7)) + "\n"
             debugMsg += "ROI\t\t: % " + str(round((toplamKar / baslangicPara) * 100,3)) + "\n"
-            debugMsg += "Net ROI\t\t: % " + str(round(((cuzdan-toplamFee) / baslangicPara) * 100,3)) + "\n"
+            debugMsg += "Net ROI\t\t: % " + str(round((((cuzdan-toplamFee) - baslangicPara) / baslangicPara) * 100,3)) + "\n"
             debugMsg += "\n"
             debugMsg += "Total Orders\t: " + str(toplamIslemSayisi) + "\n"
             debugMsg += "TP Orders\t: " + str(toplamKarliIslemSayisi) + "\n"
             debugMsg += "SL Orders\t: " + str(toplamZararKesIslemSayisi) + "\n"
             debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
-            debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"          
+            debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"        
             send_message_to_telegram(channelAlbiz, debugMsg)
             debugMsg = "" 
 
-            # Zarar Kes yaparak Stop olduysak yeni mumu bekle
+            # Yeni mumu bekle
             while(datetime.now().second != 0):
                 sleep(1)                    
                 
