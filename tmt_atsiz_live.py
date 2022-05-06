@@ -385,7 +385,7 @@ while(True):
             while (datetime.now().minute % timeFrame == 0):
                 sleep(1)
 
-            while (datetime.now().minute % timeFrame != 0 and datetime.now().second != 0):
+            while (datetime.now().minute % timeFrame != 0):
                 sleep(1)
 
         if (cuzdan + 10) < toplamFee:
