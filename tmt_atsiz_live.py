@@ -88,7 +88,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "APEUSDT"
+symbol = "GMTUSDT"
 interval = "15m"
 limit = emaVal * 5
 
@@ -216,7 +216,7 @@ while(True):
 
     ### LONG İŞLEM ###
         # LONG İşlem Aç
-        if (start == True) and (high_price >= longGirisFiyat and longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
+        if (start == True) and (high_price >= longGirisFiyat >= low_price) and (position == "") and (long_signal == True):
             islemBitti = False
             position = "Long"  
 
@@ -239,7 +239,7 @@ while(True):
             debugMsg = ""  
 
         # LONG İşlem Kar Al
-        if (start == True) and (position == "Long") and (high_price >= hedefFiyati and hedefFiyati >= low_price):
+        if (start == True) and (position == "Long") and (high_price >= hedefFiyati >= low_price):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -262,7 +262,7 @@ while(True):
             toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
 
         # LONG İşlem Stop Ol
-        if (start == True) and (position == "Long") and (high_price >= stopFiyati and stopFiyati >= low_price) and (short_signal == True):
+        if (start == True) and (position == "Long") and (((high_price >= stopFiyati >= low_price) and (short_signal == True)) or (low_price <= fib_0_000_price)):
             islemKar = cuzdan * (((stopFiyati - islemFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
@@ -286,7 +286,7 @@ while(True):
 
     ### SHORT İŞLEM ###
         # SHORT İşlem Aç
-        if (start == True) and (low_price <= shortGirisFiyat and shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
+        if (start == True) and (low_price <= shortGirisFiyat <= high_price) and (position == "") and (short_signal == True):
             islemBitti = False
             position = "Short"  
 
@@ -309,7 +309,7 @@ while(True):
             debugMsg = ""  
 
         # SHORT İşlem Kar Al
-        if (start == True) and (position == "Short") and (low_price <= hedefFiyati and hedefFiyati <= high_price):
+        if (start == True) and (position == "Short") and (low_price <= hedefFiyati <= high_price):
             islemKar = cuzdan * karOrani * kaldirac
             toplamKar += islemKar
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -332,7 +332,7 @@ while(True):
             toplamKarliIslemSayisi = toplamKarliIslemSayisi + 1
 
         # SHORT İşlem Stop Ol
-        if (start == True) and (position == "Short") and (low_price <= stopFiyati and stopFiyati <= high_price) and (long_signal == True):
+        if (start == True) and (position == "Short") and (((low_price <= stopFiyati <= high_price) and (long_signal == True)) or (high_price >= fib_1_000_price)):
             islemKar = cuzdan * (((islemFiyati - stopFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
             toplamKar += islemKar
@@ -385,7 +385,7 @@ while(True):
             while (datetime.now().minute % timeFrame == 0):
                 sleep(1)
 
-            while (datetime.now().minute % timeFrame != 0):
+            while (datetime.now().minute % timeFrame != 0 and datetime.now().second != 0):
                 sleep(1)
 
         if (cuzdan + 10) < toplamFee:
@@ -397,7 +397,10 @@ while(True):
         sleep(1) 
     except Exception as e:
         debugMsg = " Error : " + str(e) + "\n\n"
-        debugMsg += warn + "\nSistem Durduruluyor...\n" + warn
+        debugMsg += warn + "\nSistem Tekrar Bağlanmayı Deniyor...\n" + warn
         send_message_to_telegram(channelAtsiz, debugMsg)
         debugMsg = ""
-        quit()
+        sleep(15)
+        client = Client(key_id, secret_key_id)
+        continue
+        #quit()
