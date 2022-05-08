@@ -28,7 +28,7 @@ kaldirac = 1
 feeOrani = 0.0004 # percent
 karOrani = 0.002 # percent
 
-baslangicPara = 111
+baslangicPara = 100
 cuzdan = baslangicPara
 
 islemFee = 0

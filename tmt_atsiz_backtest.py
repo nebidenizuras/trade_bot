@@ -29,7 +29,7 @@ kaldirac = 1
 feeOrani = 0.0004 # percent
 bantMinimumOran = 0.0020
 
-baslangicPara = 111
+baslangicPara = 100w
 cuzdan = baslangicPara
 
 bantReferans = 0
