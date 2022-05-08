@@ -1,4 +1,4 @@
-from binance import Client
+from binance.client import Client
 import user_api_key
 import csv
 from tqdm import tqdm
@@ -141,3 +141,29 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
     searchList = dict(sorted(searchList.items(),key=operator.itemgetter(1),reverse = True)) # ascending order   
 
     return searchList, candleTime
+
+def get_current_price_of_symbol(coin_symbol, market='Future'):
+    info = []
+
+    if (market == "Spot"):
+        info = client.get_symbol_ticker(symbol=coin_symbol)
+    elif (market == "Future"):
+        info = client.futures_symbol_ticker(symbol=coin_symbol)
+
+    price = info.get('price')    
+    time = info.get('time')
+
+    return price
+
+def get_current_time(market='Future'):
+    info = []
+
+    if (market == "Spot"):
+        info = client.get_server_time()
+    elif (market == "Future"):
+        info = client.futures_time()
+
+    time = str(pd.to_datetime(info.get('serverTime'), unit='ms') + timedelta(hours=3))
+    timeStr = time.split(".", 1)[0]
+
+    return timeStr
