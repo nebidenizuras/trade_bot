@@ -17,6 +17,8 @@ import pandas as pd
 import csv
 import os
 
+from data_manager import get_historical_data_symbol
+
 from telegram_bot import warn
 
 from datetime import timedelta
@@ -29,7 +31,7 @@ kaldirac = 1
 feeOrani = 0.0004 # percent
 bantMinimumOran = 0.0020
 
-baslangicPara = 100w
+baslangicPara = 100
 cuzdan = baslangicPara
 
 bantReferans = 0
@@ -64,8 +66,8 @@ start = False
 islemBitti = False
 
 # Sinyal Değerleri
-fibVal = 13
-emaVal = 5
+fibVal = 5
+emaVal = 3
 emaType = "close" # "open" or "close"
 
 fib_1_000_price = 0.0
@@ -88,7 +90,9 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 symbol = "GMTUSDT"
-interval = "1h"
+interval = "4h"
+
+get_historical_data_symbol("Future", symbol, "1 January, 2022", "11 May, 2022", interval)
 
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
 csvName = symbol + "_" + interval + ".csv"
