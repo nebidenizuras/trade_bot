@@ -155,7 +155,7 @@ def get_current_price_of_symbol(coin_symbol, market='Future'):
     elif (market == "Future"):
         info = client.futures_symbol_ticker(symbol=coin_symbol)
 
-    price = info.get('price')    
+    price = float(info.get('price'))    
     time = info.get('time')
 
     return price
