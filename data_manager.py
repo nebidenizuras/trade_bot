@@ -41,7 +41,10 @@ import operator
 """
 
 client = Client(user_api_key.key_id, user_api_key.secret_key_id)
+#client = Client(user_api_key.TESTNET_API_KEY, user_api_key.TESTNET_API_SECRET_KEY)
 
+
+# Write Historical Data To File
 def historical_data_write_to_file(symbol, timeFrame, candlesticks):
     csvFileW = open(symbol + "_" + timeFrame +".csv", "w", newline='')
     klines_writer = csv.writer(csvFileW, delimiter=",")
@@ -70,6 +73,7 @@ def get_historical_data_list(market):
 
     print("Finished Data Downloading...")
 
+# Get Historical Data of Symbol
 def get_historical_data_symbol(market, symbol, startDateOfData, endDateOfData, timeFrame):
     print("\nStarted Data Downloading...: " + symbol + " " + timeFrame + " Time Frame")
     
@@ -142,6 +146,7 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
 
     return searchList, candleTime
 
+# Get Current Price of Symbol
 def get_current_price_of_symbol(coin_symbol, market='Future'):
     info = []
 
@@ -155,6 +160,7 @@ def get_current_price_of_symbol(coin_symbol, market='Future'):
 
     return price
 
+# Get Current Server Time as UTC+3
 def get_current_time(market='Future'):
     info = []
 
@@ -167,3 +173,57 @@ def get_current_time(market='Future'):
     timeStr = time.split(".", 1)[0]
 
     return timeStr
+
+# Get Minimum Lot Size For Order
+def get_min_lot_size(symbol: str, market='Future'):
+    return client.get_symbol_info(symbol)['filters'][2]['minQty']
+
+# Get Base Asset Name
+def get_base_asset(symbol: str, market='Future'):
+    return client.get_symbol_info(symbol)['baseAsset']
+
+# Get Tick Size Of Symbol (Step)
+def get_tick_step_size(symbol: str, market='Future'):
+    tick_step = 0
+    #tick_size = client.get_symbol_info(symbol)['filters'][0]['tickSize']  
+    tick_size = get_min_lot_size(symbol, market)
+
+    for i in tick_size:
+        if i == str(0):
+            tick_step += 1
+        elif i == str(1):
+            break 
+   
+    return tick_step
+
+# Get Wallet
+def get_wallet(market='Future'):
+    result = []
+    
+    if (market == "Spot"):
+        balances = client.get_account()['balances']
+    elif (market == "Future"):
+        balances = client.futures_account()['balances']
+
+    for i in balances:
+        if float(i['free'])*get_current_price_of_symbol(f"{i['asset']}USDT",market)>10:
+            result.append(f"{i['asset']}USDT")
+
+    return result
+
+# Get Wallet
+def get_symbol_free_quantity_in_wallet(symbol: str, market='Future'):
+    quantity = float(0)
+    
+    if (market == "Spot"):
+        balances = client.get_account()['balances']
+    elif (market == "Future"):
+        balances = client.futures_account()['balances']
+
+    for i in balances:
+        if str(i['asset']) == str(symbol):
+            quantity = i['free']
+
+    return quantity
+
+
