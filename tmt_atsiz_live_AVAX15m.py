@@ -92,7 +92,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "LUNAUSDT"
+symbol = "AVAXUSDT"
 interval = "15m"
 limit = emaVal * 5
 
