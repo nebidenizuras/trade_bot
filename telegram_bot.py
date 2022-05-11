@@ -13,48 +13,53 @@ from threading import Thread
 # https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/getUpdates
 
 # Bot ID    : 593917120
-# Grup ID(TMT #TestNet 0) : -1001630300483
-# Grup ID(TMT #TestNet 1) : -1001492284839
-# Grup ID(TMT #TestNet 2) : -1001689764244
-# Grup ID(TMT Tarama)     : -1001687885923
- 
+# Grup ID(TMT Channel_00) : -1001687885923
+# Grup ID(TMT Channel_01) : -1001492284839  
+# Grup ID(TMT Channel_02) : -1001689764244
+# Grup ID(TMT Channel_03) : -1001630300483
+
+
 message_url = "https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/sendMessage"
 
-id_albiz_gocen  = "-1001630300483"   # Grup ID(TMT #TestNet 0)
-id_atsiz        = "-1001492284839"   # Grup ID(TMT #TestNet 1)
-id_albiz        = "-1001689764244"   # Grup ID(TMT #TestNet 2)
-id_tarama       = "-1001687885923"   # Grup ID(TMT Tarama)
+id_channel_00   = "-1001687885923"   # Grup ID(TMT Channel_00)
+id_channel_01   = "-1001492284839"   # Grup ID(TMT Channel_01)
+id_channel_02   = "-1001630300483"   # Grup ID(TMT Channel_02)
+id_channel_03   = "-1001689764244"   # Grup ID(TMT Channel_03)
 
-channelAlbizGocen   = "channelAlbizGocen"
-channelAtsiz        = "channelAltiz"
-channelAlbiz        = "channelAlbiz"
-channelTarama       = "channelTarama"
+channel00   = "channel00"
+channel01   = "channel01"
+channel02   = "channel02"
+channel03   = "channel03"
+
 
 def send_message_to_telegram(channelID, message): 
     #print(message)
- 
+    #'''
     #iş yükü parçacıgı için 
     def thread1(): 
-        # mesajı telegram kanalına yollayalım 
-        if(channelID == channelAlbizGocen):
-            requests.post(url=message_url ,data={"chat_id":id_albiz_gocen,"text":message}).json()    
-        elif(channelID == channelAtsiz):
-            requests.post(url=message_url ,data={"chat_id":id_atsiz,"text":message}).json()    
-        elif(channelID == channelAlbiz): 
-            requests.post(url=message_url ,data={"chat_id":id_albiz,"text":message}).json()    
-        elif(channelID == channelTarama):
-            requests.post(url=message_url ,data={"chat_id":id_tarama,"text":message}).json()    
-                    
+        # mesajı telegram kanalına yollayalım       
+        if(channelID == channel00):
+            requests.post(url=message_url ,data={"chat_id":id_channel_00,"text":message}).json()    
+        elif(channelID == channel01):
+            requests.post(url=message_url ,data={"chat_id":id_channel_01,"text":message}).json()  
+        elif(channelID == channel02):
+            requests.post(url=message_url ,data={"chat_id":id_channel_02,"text":message}).json()               
+        elif(channelID == channel03):
+            requests.post(url=message_url ,data={"chat_id":id_channel_03,"text":message}).json()  
+
     #thread ile fonksiyonu başlatır 
     th = Thread(target=thread1) 
     th.start()
+    #'''
 
 # EMOJI
 warn = '\U0000203C'
 
 msg = warn + warn + warn + "\nSakin Ol, Plana Güven...\n" + warn + warn + warn
 
-#send_message_to_telegram(channelAlbizGocen,msg)
-#send_message_to_telegram(channelAtsiz,msg)
-#send_message_to_telegram(channelAlbiz,msg)
-#send_message_to_telegram(channelTarama,msg)
+"""
+send_message_to_telegram(channel00,msg)
+send_message_to_telegram(channel01,msg)
+send_message_to_telegram(channel02,msg)
+send_message_to_telegram(channel03,msg)
+"""

@@ -226,4 +226,16 @@ def get_symbol_free_quantity_in_wallet(symbol: str, market='Future'):
 
     return quantity
 
+# Get Precision
+def get_precision(symbol: str, market='Future'):    
+    info = []
+    pricePrecision = 0
 
+    if (market == "Spot"):
+        info = client.get_exchange_info()   
+    elif (market == "Future"):
+        info = client.futures_exchange_info()   
+    
+    pricePrecision = {si['symbol']:si['quantityPrecision'] for si in info['symbols'] if si['symbol'] in symbol}
+       
+    return int(pricePrecision[symbol]) 
