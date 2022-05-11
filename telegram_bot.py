@@ -26,10 +26,10 @@ id_channel_01   = "-1001492284839"   # Grup ID(TMT Channel_01)
 id_channel_02   = "-1001630300483"   # Grup ID(TMT Channel_02)
 id_channel_03   = "-1001689764244"   # Grup ID(TMT Channel_03)
 
-channel00   = "channel00"
-channel01   = "channel01"
-channel02   = "channel02"
-channel03   = "channel03"
+channel_00   = "channel_00"
+channel_01   = "channel_01"
+channel_02   = "channel_02"
+channel_03   = "channel_03"
 
 
 def send_message_to_telegram(channelID, message): 
@@ -38,13 +38,13 @@ def send_message_to_telegram(channelID, message):
     #iş yükü parçacıgı için 
     def thread1(): 
         # mesajı telegram kanalına yollayalım       
-        if(channelID == channel00):
+        if(channelID == channel_00):
             requests.post(url=message_url ,data={"chat_id":id_channel_00,"text":message}).json()    
-        elif(channelID == channel01):
+        elif(channelID == channel_01):
             requests.post(url=message_url ,data={"chat_id":id_channel_01,"text":message}).json()  
-        elif(channelID == channel02):
+        elif(channelID == channel_02):
             requests.post(url=message_url ,data={"chat_id":id_channel_02,"text":message}).json()               
-        elif(channelID == channel03):
+        elif(channelID == channel_03):
             requests.post(url=message_url ,data={"chat_id":id_channel_03,"text":message}).json()  
 
     #thread ile fonksiyonu başlatır 
@@ -58,8 +58,8 @@ warn = '\U0000203C'
 msg = warn + warn + warn + "\nSakin Ol, Plana Güven...\n" + warn + warn + warn
 
 """
-send_message_to_telegram(channel00,msg)
-send_message_to_telegram(channel01,msg)
-send_message_to_telegram(channel02,msg)
-send_message_to_telegram(channel03,msg)
+send_message_to_telegram(channel_00,msg)
+send_message_to_telegram(channel_01,msg)
+send_message_to_telegram(channel_02,msg)
+send_message_to_telegram(channel_03,msg)
 """
