@@ -92,7 +92,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "BNBUSDT"
+symbol = "BTCUSDT"
 interval = "15m"
 limit = emaVal * 5
 
@@ -187,9 +187,9 @@ while(True):
 
                 longKarFiyat = fib_0_772_price
                 longGirisFiyat = fib_0_572_price
-                longStopFiyat = fib_0_428_price
+                longStopFiyat = fib_0_000_price #fib_0_428_price
 
-                shortStopFiyat = fib_0_572_price              
+                shortStopFiyat = fib_1_000_price #fib_0_572_price              
                 shortGirisFiyat = fib_0_428_price          
                 shortKarFiyat = fib_0_228_price    
 

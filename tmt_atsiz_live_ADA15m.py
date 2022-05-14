@@ -18,7 +18,7 @@ import pandas as pd
 
 from data_manager import get_current_time, get_current_price_of_symbol
 
-from telegram_bot import warn, send_message_to_telegram, channel_02
+from telegram_bot import warn, send_message_to_telegram, channel_03
 
 from datetime import datetime
 from datetime import timedelta
@@ -92,7 +92,7 @@ toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
 timeFrame = 15
-symbol = "SOLUSDT"
+symbol = "ADAUSDT"
 interval = "15m"
 limit = emaVal * 5
 
@@ -187,9 +187,9 @@ while(True):
 
                 longKarFiyat = fib_0_772_price
                 longGirisFiyat = fib_0_572_price
-                longStopFiyat = fib_0_428_price
+                longStopFiyat = fib_0_000_price #fib_0_428_price
 
-                shortStopFiyat = fib_0_572_price              
+                shortStopFiyat = fib_1_000_price #fib_0_572_price              
                 shortGirisFiyat = fib_0_428_price          
                 shortKarFiyat = fib_0_228_price    
 
@@ -246,7 +246,7 @@ while(True):
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
             debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
-            send_message_to_telegram(channel_02, debugMsg)
+            send_message_to_telegram(channel_03, debugMsg)
             debugMsg = ""  
 
         # LONG İşlem Kar Al
@@ -322,7 +322,7 @@ while(True):
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
             debugMsg += "Order Fee\t: " + str(round(islemFee,7)) + "\n"
-            send_message_to_telegram(channel_02, debugMsg)
+            send_message_to_telegram(channel_03, debugMsg)
             debugMsg = ""  
 
         # SHORT İşlem Kar Al
@@ -393,7 +393,7 @@ while(True):
             debugMsg += "SL Orders\t: " + str(toplamZararKesIslemSayisi) + "\n"
             debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
             debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
-            send_message_to_telegram(channel_02, debugMsg)
+            send_message_to_telegram(channel_03, debugMsg)
             debugMsg = ""
                 
             islemBitti = False
@@ -406,7 +406,7 @@ while(True):
 
         if (cuzdan + 10) < toplamFee:
             debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
-            send_message_to_telegram(channel_02, debugMsg)
+            send_message_to_telegram(channel_03, debugMsg)
             debugMsg = ""
             quit()  
 
@@ -415,7 +415,7 @@ while(True):
     except Exception as e:
         debugMsg = warn + " Error : \n" + str(e) + "\n\n"
         debugMsg += warn + "\nSistem Tekrar Bağlanmayı Deniyor...\n" + warn
-        send_message_to_telegram(channel_02, debugMsg)
+        send_message_to_telegram(channel_03, debugMsg)
         debugMsg = ""
         sleep(10)
         client = Client(key_id, secret_key_id)
