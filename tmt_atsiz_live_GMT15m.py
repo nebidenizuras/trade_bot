@@ -185,13 +185,13 @@ while(True):
 
                 referansOrtaFiyat = fib_0_500_price
 
-                longKarFiyat = fib_0_772_price
                 longGirisFiyat = fib_0_572_price
+                longKarFiyat = fib_0_772_price                
                 longStopFiyat = fib_0_000_price #fib_0_428_price
 
+                shortGirisFiyat = fib_0_428_price   
+                shortKarFiyat = fib_0_228_price  
                 shortStopFiyat = fib_1_000_price #fib_0_572_price              
-                shortGirisFiyat = fib_0_428_price          
-                shortKarFiyat = fib_0_228_price    
 
                 debugMsg = ""
                 debugMsg += str(toplamIslemSayisi + 1) + ". Signal\n"
@@ -235,9 +235,9 @@ while(True):
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee            
-            islemFiyati = current_price #islemFiyati = longGirisFiyat 
+            islemFiyati = longGirisFiyat
             hedefFiyati = longKarFiyat
-            stopFiyati = shortGirisFiyat
+            stopFiyati = longStopFiyat
             islemBuyuklugu = cuzdan * kaldirac            
 
             debugMsg += warn + " LONG Position Open\n"
@@ -251,7 +251,7 @@ while(True):
 
         # LONG İşlem Kar Al
         if (start == True) and (position == "Long") and (current_price >= hedefFiyati):
-            hedefFiyati = current_price
+            #hedefFiyati = current_price
 
             islemKar = cuzdan * (((hedefFiyati - islemFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -277,7 +277,7 @@ while(True):
         # LONG İşlem Stop Ol
         if (start == True) and (position == "Long") and (((current_price <= stopFiyati) and (short_signal == True)) or (current_price <= fib_0_000_price)):
             
-            stopFiyati = current_price
+            #stopFiyati = current_price
 
             islemKar = cuzdan * (((stopFiyati - islemFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -310,9 +310,9 @@ while(True):
             toplamIslemSayisi = toplamIslemSayisi + 1
             islemFee = cuzdan * feeOrani * kaldirac
             toplamFee += islemFee
-            islemFiyati = current_price #islemFiyati = shortGirisFiyat
+            islemFiyati = shortGirisFiyat
             hedefFiyati = shortKarFiyat
-            stopFiyati = longGirisFiyat
+            stopFiyati = shortStopFiyat
             islemBuyuklugu = cuzdan * kaldirac
             karOrani = (shortGirisFiyat / shortKarFiyat) - 1
 
@@ -327,7 +327,7 @@ while(True):
 
         # SHORT İşlem Kar Al
         if (start == True) and (position == "Short") and (current_price <= hedefFiyati): 
-            hedefFiyati = current_price
+            #hedefFiyati = current_price
 
             islemKar = cuzdan * (((islemFiyati - hedefFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -353,7 +353,7 @@ while(True):
         # SHORT İşlem Stop Ol
         if (start == True) and (position == "Short") and (((current_price >= stopFiyati) and (long_signal == True)) or (current_price >= fib_1_000_price)):
             
-            stopFiyati = current_price
+            #stopFiyati = current_price
 
             islemKar = cuzdan * (((islemFiyati - stopFiyati) / islemFiyati)) * kaldirac
             islemKarOrani = (islemKar / cuzdan) * 100
@@ -411,7 +411,7 @@ while(True):
             quit()  
 
         previous_price = current_price
-        sleep(0.25) 
+        sleep(0.1) 
     except Exception as e:
         debugMsg = warn + " Error : \n" + str(e) + "\n\n"
         debugMsg += warn + "\nSistem Tekrar Bağlanmayı Deniyor...\n" + warn
