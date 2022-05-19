@@ -135,42 +135,47 @@ IsOK1h = False
 IsOK4h = False
 IsOK1d = False
 
-
 while True:   
-    
-    if (datetime.now().second != 1):
+    dateTime = datetime.now()
+
+    '''
+    if (dateTime.second != 1):
         IsOK1m = False
-    if (datetime.now().minute % 5 != 0):
+    if (dateTime.minute % 5 != 0):
         IsOK5m = False
-    if (datetime.now().minute % 15 != 0):
+    '''
+
+    if (dateTime.minute % 15 != 0):
         IsOK15m = False
-    if (datetime.now().minute != 0):
+    if (dateTime.minute != 0):
         IsOK1h = False
         IsOK4h = False
-    if (datetime.now().hour != 3):
+    if (dateTime.hour != 3):
         IsOK1d = False
 
-    if (datetime.now().second == 1) and (IsOK1m == False): 
+    '''
+    if (dateTime.second == 1) and (IsOK1m == False): 
         job_1m()
         IsOK1m = True
 
-    if (datetime.now().minute % 5 == 0) and (IsOK5m == False): 
+    if (dateTime.minute % 5 == 0) and (IsOK5m == False): 
         job_5m()
         IsOK5m = True
+    '''
 
-    if (datetime.now().minute % 15 == 0) and (IsOK15m == False): 
+    if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
         job_15m()
         IsOK15m = True
 
-    if (datetime.now().minute == 0) and (IsOK1h == False): 
+    if (dateTime.minute == 0) and (IsOK1h == False): 
         job_1h()
         IsOK1h= True
 
-    if (datetime.now().hour in {3,7,11,15,19,23}) and (datetime.now().minute == 0) and (IsOK4h == False): 
+    if (dateTime.hour in {3,7,11,15,19,23}) and (dateTime.minute == 0) and (IsOK4h == False): 
         job_4h()
         IsOK4h = True
 
-    if (datetime.now().hour == 3) and (datetime.now().minute == 0) and (IsOK1d == False): 
+    if (dateTime.hour == 3) and (dateTime.minute == 0) and (IsOK1d == False): 
         job_1d()
         IsOK1d = True
 
