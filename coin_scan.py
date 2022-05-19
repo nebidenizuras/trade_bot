@@ -108,29 +108,45 @@ def job_1m():
         t.start()
 
 def job_5m():
-    if (datetime.now().minute % 5 == 0) and (datetime.now().second == 1):
+    if (datetime.now().minute % 5 == 0):
         t = Thread(target=compute_process, args=["5m"])
         t.start()
 
+        while(datetime.now().minute % 5 == 0):
+            time.sleep(1)
+
 def job_15m():
-    if (datetime.now().minute % 15 == 0) and (datetime.now().second == 1):
+    if (datetime.now().minute % 15 == 0):
         t = Thread(target=compute_process, args=["15m"])
         t.start()
 
+        while(datetime.now().minute % 15 == 0):
+            time.sleep(1)
+
 def job_1h():
-    if (datetime.now().minute == 0) and (datetime.now().second == 1):
+    if (datetime.now().minute == 0):
         t = Thread(target=compute_process, args=["1h"])
         t.start()
 
+        while(datetime.now().minute == 0):
+            time.sleep(1)
+
+
 def job_4h():
-    if (datetime.now().hour in {3,7,11,15,19,23}) and (datetime.now().minute == 0) and (datetime.now().second == 1):
+    if (datetime.now().hour in {3,7,11,15,19,23}) and (datetime.now().minute == 0):
         t = Thread(target=compute_process, args=["4h"])
         t.start()
 
+        while(datetime.now().minute == 0):
+            time.sleep(1)
+
 def job_1d():
-    if (datetime.now().hour == 3) and (datetime.now().minute == 0) and (datetime.now().second == 1):
+    if (datetime.now().hour == 3) and (datetime.now().minute == 0):
         t = Thread(target=compute_process, args=["1d"])
         t.start()
+
+        while(datetime.now().minute == 0):
+            time.sleep(1)
 
 send_message("Bot Starting\n")
 
