@@ -103,60 +103,77 @@ def compute_process(timeFrame):
 
 
 def job_1m():
-    if (datetime.now().second == 1):
-        t = Thread(target=compute_process, args=["1m"])
-        t.start()
+    t = Thread(target=compute_process, args=["1m"])
+    t.start()
 
-def job_5m():
-    if (datetime.now().minute % 5 == 0):
-        t = Thread(target=compute_process, args=["5m"])
-        t.start()
-
-        while(datetime.now().minute % 5 == 0):
-            time.sleep(1)
+def job_5m():    
+    t = Thread(target=compute_process, args=["5m"])
+    t.start()
 
 def job_15m():
-    if (datetime.now().minute % 15 == 0):
-        t = Thread(target=compute_process, args=["15m"])
-        t.start()
+    t = Thread(target=compute_process, args=["15m"])
+    t.start()
 
-        while(datetime.now().minute % 15 == 0):
-            time.sleep(1)
+def job_1h():    
+    t = Thread(target=compute_process, args=["1h"])
+    t.start()
 
-def job_1h():
-    if (datetime.now().minute == 0):
-        t = Thread(target=compute_process, args=["1h"])
-        t.start()
+def job_4h():    
+    t = Thread(target=compute_process, args=["4h"])
+    t.start()
 
-        while(datetime.now().minute == 0):
-            time.sleep(1)
-
-
-def job_4h():
-    if (datetime.now().hour in {3,7,11,15,19,23}) and (datetime.now().minute == 0):
-        t = Thread(target=compute_process, args=["4h"])
-        t.start()
-
-        while(datetime.now().minute == 0):
-            time.sleep(1)
-
-def job_1d():
-    if (datetime.now().hour == 3) and (datetime.now().minute == 0):
-        t = Thread(target=compute_process, args=["1d"])
-        t.start()
-
-        while(datetime.now().minute == 0):
-            time.sleep(1)
+def job_1d():    
+    t = Thread(target=compute_process, args=["1d"])
+    t.start()
 
 send_message("Bot Starting\n")
 
-while True:    
-    #job_1m()
-    #job_5m()
-    job_15m()
-    job_1h()
-    job_4h()
-    job_1d()
+IsOK1m = False
+IsOK5m = False
+IsOK15m = False
+IsOK1h = False
+IsOK4h = False
+IsOK1d = False
+
+
+while True:   
+    
+    if (datetime.now().second != 1):
+        IsOK1m = False
+    if (datetime.now().minute % 5 != 0):
+        IsOK5m = False
+    if (datetime.now().minute % 15 != 0):
+        IsOK15m = False
+    if (datetime.now().minute != 0):
+        IsOK1h = False
+        IsOK4h = False
+    if (datetime.now().hour != 3):
+        IsOK1d = False
+
+    if (datetime.now().second == 1) and (IsOK1m == False): 
+        job_1m()
+        IsOK1m = True
+
+    if (datetime.now().minute % 5 == 0) and (IsOK5m == False): 
+        job_5m()
+        IsOK5m = True
+
+    if (datetime.now().minute % 15 == 0) and (IsOK15m == False): 
+        job_15m()
+        IsOK15m = True
+
+    if (datetime.now().minute == 0) and (IsOK1h == False): 
+        job_1h()
+        IsOK1h= True
+
+    if (datetime.now().hour in {3,7,11,15,19,23}) and (datetime.now().minute == 0) and (IsOK4h == False): 
+        job_4h()
+        IsOK4h = True
+
+    if (datetime.now().hour == 3) and (datetime.now().minute == 0) and (IsOK1d == False): 
+        job_1d()
+        IsOK1d = True
+
     time.sleep(1)
 
 '''      
