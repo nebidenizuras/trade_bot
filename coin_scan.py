@@ -104,7 +104,9 @@ IsTime1h = False
 IsTime4h = False
 IsTime1d = False
 
-send_message(warn + "\nTarama Başlatıldı...\n" + warn)
+dateTime = datetime.now()
+
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn)
 symbol_list = get_symbol_list('USDT','Future')
 compute_process("15m")
 compute_process("1h")
@@ -114,32 +116,29 @@ compute_process("1d")
 while True:   
     dateTime = datetime.now()
 
-    if (dateTime.minute % 15 == 0):
-        IsTime15m = True
-    if (dateTime.minute == 0):
-        IsTime1h = True
-    if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0):
-        IsTime4h = True
-    if (dateTime.hour == 0) and (dateTime.minute == 0):
-        IsTime1d = True
+    if (dateTime.minute % 15 != 0):
+        IsOK15m = False
+    if (dateTime.minute != 0):
+        IsOK1h = False
+        IsOK4h = False
+    if (dateTime.hour != 3):
+        IsOK1d = False
 
-    if (IsTime15m == True): 
+    if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
         compute_process("15m")
-        IsTime15m = False
+        IsOK15m = True
 
-    if (IsTime1h == True): 
+    if (dateTime.minute == 0) and (IsOK1h == False): 
         compute_process("1h")
-        IsTime1h = False
+        IsOK1h= True
 
-    if (IsTime4h == True): 
+    if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0) and (IsOK4h == False): 
         compute_process("4h")
-        IsTime4h = False
+        IsOK4h = True
 
-    if (IsTime1d == True): 
+    if (dateTime.hour == 3) and (dateTime.minute == 0) and (IsOK1d == False): 
         compute_process("1d")
-        IsTime1d = False
-
-        symbol_list = get_symbol_list('USDT','Future')
+        IsOK1d = True
 
     time.sleep(0.5)
 
