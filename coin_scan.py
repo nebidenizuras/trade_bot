@@ -152,7 +152,6 @@ while True:
         IsOK4h = False
     if (dateTime.hour != 3):
         IsOK1d = False
-
     
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
         t1d = Thread(target=compute_process, args=["Spot", "1d"])
