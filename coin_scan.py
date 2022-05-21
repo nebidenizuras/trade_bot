@@ -11,43 +11,58 @@ from data_manager import get_symbol_list
 from threading import Thread
 from telegram_bot import warn
 
-def send_message(message): 
-    channel_id = "-1001509604144"
+def send_message(message, channel): 
     message_url = "https://api.telegram.org/bot5356826126:AAEjHzEKvwhFDoy4wdnDdtK9dtxTz8vN94c/sendMessage"
     #print(message)
     #'''
     #iş yükü parçacıgı için 
     def thread1(): 
-        requests.post(url=message_url ,data={"chat_id":channel_id,"text":message}).json()  
+        requests.post(url=message_url ,data={"chat_id":channel,"text":message}).json()  
 
     #thread ile fonksiyonu başlatır 
     th = Thread(target=thread1) 
     th.start()
     #'''
 
-def compute_process(timeFrame):
-    global symbol_list
-
-    long_signal_count = 0
-    short_signal_count = 0
+def compute_process(market, timeFrame):
+    global symbol_list_future
+    global symbol_list_spot
 
     longMsg = warn + " LONG Sinyaller (" + timeFrame + ")\n\n" 
     shortMsg = warn + " SHORT Sinyaller (" + timeFrame + ")\n\n" 
-    exchange = ccxt.binance({
-    "apiKey": "",
-    "secret": "",
-    'options': {
-    'defaultType': 'future'
-    },
-    'enableRateLimit': True
-    })  
-
+    long_signal_count = 0
+    short_signal_count = 0
+    symbol_list = list()
     Limit = 100
+    channel_id = ""
     
     # RSI SET
     rsi_low_limit = 30
     rsi_high_limit = 70
-    
+
+    if (market == "Spot"):
+        symbol_list = symbol_list_spot
+        channel_id = channel_id_spot
+        exchange = ccxt.binance({
+        "apiKey": "",
+        "secret": "",
+        'options': {
+        'defaultType': 'spot'
+        },
+        'enableRateLimit': True
+        })  
+    elif (market == "Future"):
+        symbol_list = symbol_list_future
+        channel_id = channel_id_future
+        exchange = ccxt.binance({
+        "apiKey": "",
+        "secret": "",
+        'options': {
+        'defaultType': 'future'
+        },
+        'enableRateLimit': True
+        })  
+   
     for Symbol in symbol_list:
         try:
             # Get Data
@@ -73,19 +88,19 @@ def compute_process(timeFrame):
             vortex_short_value = df['VTSHORT'][len(df.index) - 1]            
 
             # Find LONG Positions
-            if (rsi_value <= rsi_low_limit) and (vortex_long_value < 0.9):
+            if (rsi_value <= rsi_low_limit) and (vortex_long_value < 0.85):
                 longMsg += Symbol + "\n"
                 long_signal_count += 1
             
             # Find SHORT Positions
-            if (rsi_value >= rsi_high_limit) and (vortex_short_value < 0.9):
+            if (rsi_value >= rsi_high_limit) and (vortex_short_value < 0.85):
                 shortMsg += Symbol + "\n"
                 short_signal_count += 1
 
         except Exception as e:
                 debugMsg = warn + " Error : \n" + str(e) + "\n\n"
                 debugMsg += warn + "\nSistem Tekrar Bağlanmayı Deniyor...\n" + warn
-                send_message(debugMsg)
+                send_message(debugMsg, channel_id)
                 sleep(5)
                 continue
 
@@ -96,24 +111,34 @@ def compute_process(timeFrame):
     if(short_signal_count == 0):
         shortMsg += "----------\n"    
 
-    send_message(longMsg + "\n" + shortMsg)
+    send_message(longMsg + "\n" + shortMsg, channel_id)
 
+# Telegram Channel IDs
+channel_id_future = "-1001509604144"
+channel_id_spot = "-1001625055452"
+
+# Time Flags
 IsTime5m = False
 IsTime15m = False
 IsTime1h = False
 IsTime4h = False
 IsTime1d = False
 
+# Symbol Lists
+symbol_list_future = get_symbol_list('USDT','Future')
+symbol_list_spot = get_symbol_list('USDT','Spot')
+
+# Threads
+t5m = Thread(target=compute_process, args=["Future", "5m"])
+t15m = Thread(target=compute_process, args=["Future", "15m"])
+t1h = Thread(target=compute_process, args=["Spot", "1h"])
+t4h = Thread(target=compute_process, args=["Spot", "4h"])
+t1d = Thread(target=compute_process, args=["Spot", "1d"])
+
+# Starting Message
 dateTime = datetime.now()
-
-send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn)
-symbol_list = get_symbol_list('USDT','Future')
-
-t5m = Thread(target=compute_process, args=["5m"])
-t15m = Thread(target=compute_process, args=["15m"])
-t1h = Thread(target=compute_process, args=["1h"])
-t4h = Thread(target=compute_process, args=["4h"])
-t1d = Thread(target=compute_process, args=["1d"])
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future)
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_spot)
 
 while True:   
     dateTime = datetime.now()
@@ -128,33 +153,15 @@ while True:
     if (dateTime.hour != 3):
         IsOK1d = False
 
-    if (dateTime.minute % 5 == 0) and (IsOK5m == False): 
-        t5m = Thread(target=compute_process, args=["5m"])
-        t5m.start()
-        IsOK5m = True
-
-    if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
-        t15m = Thread(target=compute_process, args=["15m"])
-        t15m.start()
-        IsOK15m = True
-
-    if (dateTime.minute == 0) and (IsOK1h == False): 
-        t1h = Thread(target=compute_process, args=["1h"])
-        t1h.start()
-        IsOK1h= True
-
-    if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0) and (IsOK4h == False): 
-        t4h = Thread(target=compute_process, args=["4h"])
-        t4h.start()
-        IsOK4h = True
-
+    
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
-        t1d = Thread(target=compute_process, args=["1d"])
+        t1d = Thread(target=compute_process, args=["Spot", "1d"])
         t1d.start()
         IsOK1d = True
 
         try:
-            symbol_list = get_symbol_list('USDT','Future')
+            symbol_list_future = get_symbol_list('USDT','Future')
+            symbol_list_spot = get_symbol_list('USDT','Spot')
         except Exception as e:
             debugMsg = warn + " Error : \n" + str(e) + "\n\n"
             debugMsg += warn + "\nSistem Tekrar Bağlanmayı Deniyor...\n" + warn
@@ -162,20 +169,41 @@ while True:
             sleep(5)
             continue
 
-    if(t5m.is_alive() == True):
-        t5m.join()
+    if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0) and (IsOK4h == False): 
+        t4h = Thread(target=compute_process, args=["Spot", "4h"])
+        t4h.start()
+        IsOK4h = True
 
-    if(t15m.is_alive() == True):
-        t15m.join()
+    if (dateTime.minute == 0) and (IsOK1h == False): 
+        t1h = Thread(target=compute_process, args=["Spot", "1h"])
+        t1h.start()
+        IsOK1h = True
 
-    if(t1h.is_alive() == True):
-        t1h.join()
+    if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
+        t15m = Thread(target=compute_process, args=["Future", "15m"])
+        t15m.start()
+        IsOK15m = True
+
+    if (dateTime.minute % 5 == 0) and (IsOK5m == False): 
+        t5m = Thread(target=compute_process, args=["Future", "5m"])
+        t5m.start()
+        IsOK5m = True
+
+
+    if(t1d.is_alive() == True):
+        t1d.join()
 
     if(t4h.is_alive() == True):
         t4h.join()
 
-    if(t1d.is_alive() == True):
-        t1d.join()
+    if(t1h.is_alive() == True):
+        t1h.join()
+
+    if(t15m.is_alive() == True):
+        t15m.join() 
+
+    if(t5m.is_alive() == True):
+        t5m.join()
 
     time.sleep(1)
 
