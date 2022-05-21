@@ -10,7 +10,7 @@ def calculate_heikin_ashi(df):
         if i > 0:
             dfHA['open'][i] = (float(dfHA['open'][i-1]) + float(dfHA['close'][i-1])) / 2 
         dfHA['close'][i] = (float(df['close'][i]) + float(df['open'][i]) + float(df['low'][i]) + float(df['high'][i])) / 4
-        dfHA['high'][i] = max(dfHA['high'][i], dfHA['open'][i], dfHA['close'][i])
-        dfHA['low'][i] = min(dfHA['low'][i], dfHA['open'][i], dfHA['close'][i])
+        dfHA['high'][i] = max(float(dfHA['high'][i]), float(dfHA['open'][i]), float(dfHA['close'][i]))
+        dfHA['low'][i] = min(float(dfHA['low'][i]), float(dfHA['open'][i]), float(dfHA['close'][i]))
     
     return dfHA
