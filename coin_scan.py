@@ -1,13 +1,10 @@
-from http import client
 from Indicators import heikin_ashi
 import pandas_ta as ta
 import pandas as pd
 import time
-import schedule
 import ccxt
 from datetime import datetime 
 from time import sleep
-from datetime import timedelta 
 import requests 
 from threading import Thread 
 from data_manager import get_symbol_list
@@ -29,6 +26,8 @@ def send_message(message):
     #'''
 
 def compute_process(timeFrame):
+    global symbol_list
+
     long_signal_count = 0
     short_signal_count = 0
 
@@ -44,8 +43,7 @@ def compute_process(timeFrame):
     })  
 
     Limit = 100
-    symbol_list = get_symbol_list('USDT','Future')
-
+    
     # RSI SET
     rsi_low_limit = 30
     rsi_high_limit = 70
@@ -62,7 +60,6 @@ def compute_process(timeFrame):
             df['close'] = dfHA['close'].astype('float')
             df['high'] = dfHA['high'].astype('float')
             df['low'] = dfHA['low'].astype('float')
-            df['timestamp'] = pd.to_datetime(df['timestamp'],unit= "ms") + timedelta(hours=3)
 
             # Calculate RSI
             df['RSI'] = ta.rsi(df["close"], length=14)
@@ -102,14 +99,55 @@ def compute_process(timeFrame):
     send_message(longMsg + "\n" + shortMsg)
 
 
-def job_1m():
-    t = Thread(target=compute_process, args=["1m"])
-    t.start()
+IsTime15m = False
+IsTime1h = False
+IsTime4h = False
+IsTime1d = False
 
-def job_5m():    
-    t = Thread(target=compute_process, args=["5m"])
-    t.start()
+send_message(warn + "\nTarama Başlatıldı...\n" + warn)
+symbol_list = get_symbol_list('USDT','Future')
+compute_process("15m")
+compute_process("1h")
+compute_process("4h")
+compute_process("1d")
 
+while True:   
+    dateTime = datetime.now()
+
+    if (dateTime.minute % 15 == 0):
+        IsTime15m = True
+    if (dateTime.minute == 0):
+        IsTime1h = True
+    if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0):
+        IsTime4h = True
+    if (dateTime.hour == 0) and (dateTime.minute == 0):
+        IsTime1d = True
+
+    if (IsTime15m == True): 
+        compute_process("15m")
+        IsTime15m = False
+
+    if (IsTime1h == True): 
+        compute_process("1h")
+        IsTime1h = False
+
+    if (IsTime4h == True): 
+        compute_process("4h")
+        IsTime4h = False
+
+    if (IsTime1d == True): 
+        compute_process("1d")
+        IsTime1d = False
+
+        symbol_list = get_symbol_list('USDT','Future')
+
+    time.sleep(0.5)
+
+
+
+### CODE BACKUPS
+
+'''
 def job_15m():
     t = Thread(target=compute_process, args=["15m"])
     t.start()
@@ -138,13 +176,6 @@ IsOK1d = False
 while True:   
     dateTime = datetime.now()
 
-    '''
-    if (dateTime.second != 1):
-        IsOK1m = False
-    if (dateTime.minute % 5 != 0):
-        IsOK5m = False
-    '''
-
     if (dateTime.minute % 15 != 0):
         IsOK15m = False
     if (dateTime.minute != 0):
@@ -152,16 +183,6 @@ while True:
         IsOK4h = False
     if (dateTime.hour != 3):
         IsOK1d = False
-
-    '''
-    if (dateTime.second == 1) and (IsOK1m == False): 
-        job_1m()
-        IsOK1m = True
-
-    if (dateTime.minute % 5 == 0) and (IsOK5m == False): 
-        job_5m()
-        IsOK5m = True
-    '''
 
     if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
         job_15m()
@@ -180,6 +201,8 @@ while True:
         IsOK1d = True
 
     time.sleep(1)
+
+'''
 
 '''      
 def job_1m():
