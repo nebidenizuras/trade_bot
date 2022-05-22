@@ -98,6 +98,24 @@ def get_symbol_list(asset, market):
             if coin['quoteAsset'] == asset:  
                 symbol_list.append(coin["baseAsset"] + asset) 
     
+    if (market == "Spot"):
+        up_symbols = "UP" + asset
+        down_symbols = "DOWN" + asset
+        bull_symbols = "BULL" + asset
+        bear_symbols = "BEAR" + asset
+
+        symbol_list_dummy = []
+        for symbol in symbol_list:
+            if (up_symbols in symbol) or (down_symbols in symbol) or (bull_symbols in symbol) or (bear_symbols in symbol):
+                continue
+            else:
+                symbol_list_dummy.append(symbol)
+
+        symbol_list = []
+        symbol_list = symbol_list_dummy
+
+    symbol_list.sort()
+
     return symbol_list
 
 # Get Hype Symbol List
