@@ -235,7 +235,8 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        send_message(longMsg + "\n" + shortMsg, channel_id_future)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future)
 
     
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
@@ -284,7 +285,8 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
 
 
     if (dateTime.minute == 0) and (IsOK1h == False): 
@@ -297,7 +299,7 @@ while True:
         
         # 4h-1h'de çıkanları yazdır
         longMsg = warn + " LONG Sinyaller (1h-4h Ortak)\n\n" 
-        shortMsg = warn + " SHORT Sinyaller (1h-1h Ortak)\n\n" 
+        shortMsg = warn + " SHORT Sinyaller (1h-4h Ortak)\n\n" 
         long_signal_count = 0
         short_signal_count = 0
 
@@ -318,7 +320,8 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
 
 
     # Wait until all threads finish
