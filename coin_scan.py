@@ -59,7 +59,7 @@ def compute_process(market, timeFrame, long_list:list, short_list:list):
         if (timeFrame == "1h") or (timeFrame == "4h") or (timeFrame == "1d"): 
             channel_id = channel_id_future_2
         elif(timeFrame == "5m") or (timeFrame == "15m"):
-            channel_id = channel_id_future
+            channel_id = channel_id_future_1
         exchange = ccxt.binance({
         "apiKey": "",
         "secret": "",
@@ -119,11 +119,13 @@ def compute_process(market, timeFrame, long_list:list, short_list:list):
     if(short_signal_count == 0):
         shortMsg += "----------\n"    
 
-    send_message(longMsg + "\n" + shortMsg, channel_id)
+    #send_message(longMsg + "\n" + shortMsg, channel_id)
 
 # Telegram Channel IDs
-channel_id_future = "-1001509604144"
-channel_id_future_2 = "-1001625055452"
+channel_id_future_1 = "-1001509604144"  # 5m-15m
+channel_id_future_2 = "-1001625055452"  # 15m-1h
+channel_id_future_3 = "-1001628871969"  # 1h-4h
+channel_id_future_4 = "-1001692848554"  # 4h-1d
 channel_id_spot = ""
 
 # Coin Lists After Scaning
@@ -164,23 +166,24 @@ t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_l
 t4h = Thread(target=compute_process, args=["Future", "4h", long_list_4h, short_list_4h])
 t1d = Thread(target=compute_process, args=["Future", "1d", long_list_1d, short_list_1d])
 
-
-
 # Starting Message
 dateTime = datetime.now()
-send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future)
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future_1)
 send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future_2)
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future_3)
+send_message(warn + "\nTarama Başlatıldı...\nSaat : " + str(dateTime.hour) + ":" + str(dateTime.minute) + "\n" + warn, channel_id_future_4)
 
 #'''
 t5m.start()
-t5m.join()
 t15m.start()
-t15m.join()
 t1h.start()
-t1h.join()
 t4h.start()
-t4h.join()
 t1d.start()
+
+t5m.join()
+t15m.join()
+t1h.join()
+t4h.join()
 t1d.join()
 #'''
 
@@ -208,36 +211,6 @@ while True:
         t5m = Thread(target=compute_process, args=["Future", "5m", long_list_5m, short_list_5m])        
         t5m.start()
         IsOK5m = True
-
-        if(t15m.is_alive() == True):
-            t15m.join() 
-
-        # 15m-5m'de çıkanları yazdır
-        longMsg = warn + " LONG Sinyaller (5m-15m Ortak)\n\n" 
-        shortMsg = warn + " SHORT Sinyaller (5m-15m Ortak)\n\n" 
-        long_signal_count = 0
-        short_signal_count = 0
-
-        for Symbol in long_list_5m:
-            if (Symbol in long_list_15m):
-                longMsg += Symbol + "\n"
-                long_signal_count += 1
-
-        for Symbol in short_list_5m:
-            if (Symbol in short_list_15m):
-                shortMsg += Symbol + "\n"
-                short_signal_count += 1
-
-        # Bilgileri Gönder    
-        if(long_signal_count == 0):
-            longMsg += "----------\n"  
-
-        if(short_signal_count == 0):
-            shortMsg += "----------\n"    
-
-        if(long_signal_count > 0) or (short_signal_count > 0):
-            send_message(longMsg + "\n" + shortMsg, channel_id_future)
-
     
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
         t1d = Thread(target=compute_process, args=["Future", "1d", long_list_1d, short_list_1d])
@@ -259,6 +232,18 @@ while True:
         t4h.start()
         IsOK4h = True
 
+    if (dateTime.minute == 0) and (IsOK1h == False): 
+        t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_list_1h])
+        t1h.start()
+        IsOK1h = True
+
+    # Wait until all threads finish
+    if(t1d.is_alive() == True):
+        t1d.join()
+        
+    if(t4h.is_alive() == True):
+        t4h.join()
+        
         if(t1d.is_alive() == True):
             t1d.join()
 
@@ -285,14 +270,11 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        if(long_signal_count > 0) or (short_signal_count > 0):
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
 
-
-    if (dateTime.minute == 0) and (IsOK1h == False): 
-        t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_list_1h])
-        t1h.start()
-        IsOK1h = True
+    if(t1h.is_alive() == True):
+        t1h.join()
 
         if(t4h.is_alive() == True):
             t4h.join()
@@ -320,21 +302,72 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        if(long_signal_count > 0) or (short_signal_count > 0):
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
 
-
-    # Wait until all threads finish
-    if(t1d.is_alive() == True):
-        t1d.join()
-    if(t4h.is_alive() == True):
-        t4h.join()
-    if(t1h.is_alive() == True):
-        t1h.join()
     if(t15m.is_alive() == True):
         t15m.join() 
+        
+        if(t1h.is_alive() == True):
+            t1h.join() 
+
+        # 15m-1h'de çıkanları yazdır
+        longMsg = warn + " LONG Sinyaller (15m-1h Ortak)\n\n" 
+        shortMsg = warn + " SHORT Sinyaller (15m-1h Ortak)\n\n" 
+        long_signal_count = 0
+        short_signal_count = 0
+
+        for Symbol in long_list_15m:
+            if (Symbol in long_list_1h):
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+        for Symbol in short_list_15m:
+            if (Symbol in short_list_1h):
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+        # Bilgileri Gönder    
+        if(long_signal_count == 0):
+            longMsg += "----------\n"  
+
+        if(short_signal_count == 0):
+            shortMsg += "----------\n"    
+
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+
     if(t5m.is_alive() == True):
         t5m.join()
+        
+        if(t15m.is_alive() == True):
+            t15m.join() 
+
+        # 15m-5m'de çıkanları yazdır
+        longMsg = warn + " LONG Sinyaller (5m-15m Ortak)\n\n" 
+        shortMsg = warn + " SHORT Sinyaller (5m-15m Ortak)\n\n" 
+        long_signal_count = 0
+        short_signal_count = 0
+
+        for Symbol in long_list_5m:
+            if (Symbol in long_list_15m):
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+        for Symbol in short_list_5m:
+            if (Symbol in short_list_15m):
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+        # Bilgileri Gönder    
+        if(long_signal_count == 0):
+            longMsg += "----------\n"  
+
+        if(short_signal_count == 0):
+            shortMsg += "----------\n"    
+
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
 
     time.sleep(1)
 
