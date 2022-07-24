@@ -155,6 +155,13 @@ IsTime1h = False
 IsTime4h = False
 IsTime1d = False
 
+# Message Send Flags
+IsMessage5m = False
+IsMessage15m = False
+IsMessage1h = False
+IsMessage4h = False
+IsMessage1d = False
+
 # Symbol Lists
 symbol_list_future = get_symbol_list('USDT','Future')
 symbol_list_spot = get_symbol_list('USDT','Spot')
@@ -201,18 +208,21 @@ while True:
     if (dateTime.hour != 3):
         IsOK1d = False
 
-
+    # Start the scan threads
     if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
+        IsMessage15m = True
         t15m = Thread(target=compute_process, args=["Future", "15m", long_list_15m, short_list_15m])
         t15m.start()
         IsOK15m = True
 
     if (dateTime.minute % 5 == 0) and (IsOK5m == False): 
+        IsMessage5m = True
         t5m = Thread(target=compute_process, args=["Future", "5m", long_list_5m, short_list_5m])        
         t5m.start()
         IsOK5m = True
     
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
+        IsMessage1d = True
         t1d = Thread(target=compute_process, args=["Future", "1d", long_list_1d, short_list_1d])
         t1d.start()
         IsOK1d = True
@@ -228,22 +238,33 @@ while True:
             continue
 
     if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0) and (IsOK4h == False): 
+        IsMessage4h = True
         t4h = Thread(target=compute_process, args=["Future", "4h", long_list_4h, short_list_4h])
         t4h.start()
         IsOK4h = True
 
     if (dateTime.minute == 0) and (IsOK1h == False): 
+        IsMessage1h = True
         t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_list_1h])
         t1h.start()
         IsOK1h = True
 
     # Wait until all threads finish
     if(t1d.is_alive() == True):
-        t1d.join()
-        
+        t1d.join()        
     if(t4h.is_alive() == True):
         t4h.join()
-        
+    if(t1h.is_alive() == True):
+        t1h.join()        
+    if(t15m.is_alive() == True):
+        t15m.join()
+    if(t5m.is_alive() == True):
+        t5m.join()        
+    
+    # Send Scanned Coins To Channels
+    if(IsMessage4h == True):    
+        IsMessage4h = False
+
         if(t1d.is_alive() == True):
             t1d.join()
 
@@ -273,8 +294,8 @@ while True:
         #if(long_signal_count > 0) or (short_signal_count > 0):
         send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
 
-    if(t1h.is_alive() == True):
-        t1h.join()
+    if(IsMessage1h == True):    
+        IsMessage1h = False
 
         if(t4h.is_alive() == True):
             t4h.join()
@@ -305,9 +326,9 @@ while True:
         #if(long_signal_count > 0) or (short_signal_count > 0):
         send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
 
-    if(t15m.is_alive() == True):
-        t15m.join() 
-        
+    if(IsMessage15m == True):    
+        IsMessage15m = False
+
         if(t1h.is_alive() == True):
             t1h.join() 
 
@@ -337,9 +358,9 @@ while True:
         #if(long_signal_count > 0) or (short_signal_count > 0):
         send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
 
-    if(t5m.is_alive() == True):
-        t5m.join()
-        
+    if(IsMessage5m == True):    
+        IsMessage5m = False
+
         if(t15m.is_alive() == True):
             t15m.join() 
 
@@ -368,6 +389,7 @@ while True:
 
         #if(long_signal_count > 0) or (short_signal_count > 0):
         send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
+
 
     time.sleep(1)
 
