@@ -291,8 +291,28 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        #if(long_signal_count > 0) or (short_signal_count > 0):
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
+        else:
+            longMsg = warn + " LONG Sinyaller (1d)\n\n" 
+            shortMsg = warn + " SHORT Sinyaller (1d)\n\n" 
+
+            for Symbol in long_list_1d:
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+            for Symbol in short_list_1d:
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+            # Bilgileri Gönder    
+            if(long_signal_count == 0):
+                longMsg += "----------\n"  
+
+            if(short_signal_count == 0):
+                shortMsg += "----------\n"    
+
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
 
     if(IsMessage1h == True):    
         IsMessage1h = False
@@ -323,8 +343,28 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        #if(long_signal_count > 0) or (short_signal_count > 0):
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
+        else:
+            longMsg = warn + " LONG Sinyaller (4h)\n\n" 
+            shortMsg = warn + " SHORT Sinyaller (4h)\n\n" 
+
+            for Symbol in long_list_4h:
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+            for Symbol in short_list_4h:
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+            # Bilgileri Gönder    
+            if(long_signal_count == 0):
+                longMsg += "----------\n"  
+
+            if(short_signal_count == 0):
+                shortMsg += "----------\n"    
+
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
 
     if(IsMessage15m == True):    
         IsMessage15m = False
@@ -355,8 +395,28 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        #if(long_signal_count > 0) or (short_signal_count > 0):
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
+        else:
+            longMsg = warn + " LONG Sinyaller (1h)\n\n" 
+            shortMsg = warn + " SHORT Sinyaller (1h)\n\n" 
+
+            for Symbol in long_list_1h:
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+            for Symbol in short_list_1h:
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+            # Bilgileri Gönder    
+            if(long_signal_count == 0):
+                longMsg += "----------\n"  
+
+            if(short_signal_count == 0):
+                shortMsg += "----------\n"    
+
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_2)
 
     if(IsMessage5m == True):    
         IsMessage5m = False
@@ -387,8 +447,28 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        #if(long_signal_count > 0) or (short_signal_count > 0):
-        send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
+        if(long_signal_count > 0) or (short_signal_count > 0):
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
+        else:
+            longMsg = warn + " LONG Sinyaller (15m)\n\n" 
+            shortMsg = warn + " SHORT Sinyaller (15m)\n\n" 
+
+            for Symbol in long_list_15m:
+                longMsg += Symbol + "\n"
+                long_signal_count += 1
+
+            for Symbol in short_list_15m:
+                shortMsg += Symbol + "\n"
+                short_signal_count += 1
+
+            # Bilgileri Gönder    
+            if(long_signal_count == 0):
+                longMsg += "----------\n"  
+
+            if(short_signal_count == 0):
+                shortMsg += "----------\n"    
+
+            send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
 
 
     time.sleep(1)
