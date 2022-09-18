@@ -169,9 +169,9 @@ symbol_list_spot = get_symbol_list('USDT','Spot')
 # Threads
 t5m = Thread(target=compute_process, args=["Future", "5m", long_list_5m, short_list_5m])
 t15m = Thread(target=compute_process, args=["Future", "15m", long_list_15m, short_list_15m])
-t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_list_1h])
-t4h = Thread(target=compute_process, args=["Future", "4h", long_list_4h, short_list_4h])
-t1d = Thread(target=compute_process, args=["Future", "1d", long_list_1d, short_list_1d])
+t1h = Thread(target=compute_process, args=["Spot", "1h", long_list_1h, short_list_1h])
+t4h = Thread(target=compute_process, args=["Spot", "4h", long_list_4h, short_list_4h])
+t1d = Thread(target=compute_process, args=["Spot", "1d", long_list_1d, short_list_1d])
 
 # Starting Message
 dateTime = datetime.now()
@@ -198,16 +198,19 @@ while True:
     dateTime = datetime.now()
 
     # Check that which time periods will be scanned
+    '''
     if (dateTime.minute % 5 != 0):
         IsOK5m = False
     if (dateTime.minute % 15 != 0):
         IsOK15m = False
+    '''
     if (dateTime.minute != 0):
         IsOK1h = False
         IsOK4h = False
     if (dateTime.hour != 3):
         IsOK1d = False
 
+    '''
     # Start the scan threads
     if (dateTime.minute % 15 == 0) and (IsOK15m == False): 
         IsMessage15m = True
@@ -220,10 +223,11 @@ while True:
         t5m = Thread(target=compute_process, args=["Future", "5m", long_list_5m, short_list_5m])        
         t5m.start()
         IsOK5m = True
-    
+    '''
+
     if (dateTime.hour == 0) and (dateTime.minute == 0) and (IsOK1d == False): 
         IsMessage1d = True
-        t1d = Thread(target=compute_process, args=["Future", "1d", long_list_1d, short_list_1d])
+        t1d = Thread(target=compute_process, args=["Spot", "1d", long_list_1d, short_list_1d])
         t1d.start()
         IsOK1d = True
 
@@ -239,13 +243,13 @@ while True:
 
     if (dateTime.hour in {0,4,8,12,16,20}) and (dateTime.minute == 0) and (IsOK4h == False): 
         IsMessage4h = True
-        t4h = Thread(target=compute_process, args=["Future", "4h", long_list_4h, short_list_4h])
+        t4h = Thread(target=compute_process, args=["Spot", "4h", long_list_4h, short_list_4h])
         t4h.start()
         IsOK4h = True
 
     if (dateTime.minute == 0) and (IsOK1h == False): 
         IsMessage1h = True
-        t1h = Thread(target=compute_process, args=["Future", "1h", long_list_1h, short_list_1h])
+        t1h = Thread(target=compute_process, args=["Spot", "1h", long_list_1h, short_list_1h])
         t1h.start()
         IsOK1h = True
 
@@ -255,12 +259,14 @@ while True:
     if(t4h.is_alive() == True):
         t4h.join()
     if(t1h.is_alive() == True):
-        t1h.join()        
+        t1h.join()   
+    '''             
     if(t15m.is_alive() == True):
         t15m.join()
     if(t5m.is_alive() == True):
         t5m.join()        
-    
+    '''
+
     # Send Scanned Coins To Channels
     if(IsMessage4h == True):    
         IsMessage4h = False
@@ -291,28 +297,28 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        if(long_signal_count > 0) or (short_signal_count > 0):
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
-        else:
-            longMsg = warn + " LONG Sinyaller (1d)\n\n" 
-            shortMsg = warn + " SHORT Sinyaller (1d)\n\n" 
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
+        #else:
+        longMsg = warn + " LONG Sinyaller (1d)\n\n" 
+        shortMsg = warn + " SHORT Sinyaller (1d)\n\n" 
 
-            for Symbol in long_list_1d:
-                longMsg += Symbol + "\n"
-                long_signal_count += 1
+        for Symbol in long_list_1d:
+            longMsg += Symbol + "\n"
+            long_signal_count += 1
 
-            for Symbol in short_list_1d:
-                shortMsg += Symbol + "\n"
-                short_signal_count += 1
+        for Symbol in short_list_1d:
+            shortMsg += Symbol + "\n"
+            short_signal_count += 1
 
-            # Bilgileri Gönder    
-            if(long_signal_count == 0):
-                longMsg += "----------\n"  
+        # Bilgileri Gönder    
+        if(long_signal_count == 0):
+            longMsg += "----------\n"  
 
-            if(short_signal_count == 0):
-                shortMsg += "----------\n"    
+        if(short_signal_count == 0):
+            shortMsg += "----------\n"    
 
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_4)
 
     if(IsMessage1h == True):    
         IsMessage1h = False
@@ -343,29 +349,30 @@ while True:
         if(short_signal_count == 0):
             shortMsg += "----------\n"    
 
-        if(long_signal_count > 0) or (short_signal_count > 0):
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
-        else:
-            longMsg = warn + " LONG Sinyaller (4h)\n\n" 
-            shortMsg = warn + " SHORT Sinyaller (4h)\n\n" 
+        #if(long_signal_count > 0) or (short_signal_count > 0):
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
+        #else:
+        longMsg = warn + " LONG Sinyaller (4h)\n\n" 
+        shortMsg = warn + " SHORT Sinyaller (4h)\n\n" 
 
-            for Symbol in long_list_4h:
-                longMsg += Symbol + "\n"
-                long_signal_count += 1
+        for Symbol in long_list_4h:
+            longMsg += Symbol + "\n"
+            long_signal_count += 1
 
-            for Symbol in short_list_4h:
-                shortMsg += Symbol + "\n"
-                short_signal_count += 1
+        for Symbol in short_list_4h:
+            shortMsg += Symbol + "\n"
+            short_signal_count += 1
 
-            # Bilgileri Gönder    
-            if(long_signal_count == 0):
-                longMsg += "----------\n"  
+        # Bilgileri Gönder    
+        if(long_signal_count == 0):
+            longMsg += "----------\n"  
 
-            if(short_signal_count == 0):
-                shortMsg += "----------\n"    
+        if(short_signal_count == 0):
+            shortMsg += "----------\n"    
 
-            send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
+        send_message(longMsg + "\n" + shortMsg, channel_id_future_3)
 
+    '''
     if(IsMessage15m == True):    
         IsMessage15m = False
 
@@ -469,7 +476,7 @@ while True:
                 shortMsg += "----------\n"    
 
             send_message(longMsg + "\n" + shortMsg, channel_id_future_1)
-
+    '''
 
     time.sleep(1)
 
