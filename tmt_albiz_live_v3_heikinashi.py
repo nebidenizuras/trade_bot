@@ -66,7 +66,7 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "APEBUSD"
+symbol = "XRPBUSD"
 interval = "5m"
 timeFrame = 5
 limit = TrendLength * 4
