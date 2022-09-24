@@ -6,6 +6,7 @@
   FIB 0.228 de kar alırım
 - Stop noktaları diğer yön işlemin açıldığı yer ve eması 0.5'e uyumlu ise
 - EMA3 ile sinyal yapılır.
+- İşleme giriş fiyatına gelip gelmediğini kontrol için 1m mum detayına bakılır
 '''
 
 from Indicators.fibonacci_retracement import calculate_fib
@@ -17,7 +18,7 @@ import pandas as pd
 import csv
 import os
 
-from data_manager import get_historical_data_symbol
+from bist_data_manager import get_historical_data_symbol
 
 from telegram_bot import warn
 
@@ -27,11 +28,11 @@ import time
 tic = time.perf_counter()
 
 #ATTRIBUTES
-kaldirac = 1
-feeOrani = 0.0004 # percent
+kaldirac = 5
+feeOrani = 0 # # percent
 bantMinimumOran = 0.0020
 
-baslangicPara = 100
+baslangicPara = 2900
 cuzdan = baslangicPara
 
 bantReferans = 0
@@ -89,13 +90,19 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "GMTUSDT"
-interval = "4h"
+symbol = "FROTO.IS"
+interval = "15m"
+startDate = "2022-08-01"
+endDate = "2022-08-27"
 
-get_historical_data_symbol("Future", symbol, "1 January, 2022", "11 May, 2022", interval)
+get_historical_data_symbol(symbol, startDate, endDate, interval)
+
+interval2 = "1m"
+#get_historical_data_symbol(symbol, startDate, endDate, interval2)
 
 #csvName = "Historical_Data/" + symbol + "_" + interval + ".csv"
 csvName = symbol + "_" + interval + ".csv"
+csvName2 = symbol + "_" + interval2 + ".csv"
 logFileName = "LogFile_" +  symbol + "_" + interval + ".txt"
 
 if os.path.isfile(logFileName):
@@ -104,15 +111,13 @@ logFileObject = open(logFileName, 'a', encoding="utf-8")
 
 print("Data is preparing...\n")
 
-attributes = ["openTime","open","high","low","close","volume","closeTime","2","3","4","5","6"]
+attributes = ["datetime","open","high","low","close","Adj Close","Volume"]
 df = pd.read_csv(csvName, names = attributes)
 
 df['open'] = df['open'].astype('float')
 df['close'] = df['close'].astype('float')
 df['high'] = df['high'].astype('float')
 df['low'] = df['low'].astype('float')
-df["openTime"] = pd.to_datetime(df["openTime"],unit= "ms") + timedelta(hours=3)
-df["closeTime"] = pd.to_datetime(df["closeTime"],unit= "ms") + timedelta(hours=3)
 df["EMA"] = ema_indicator(df[emaType],emaVal)
 df["FIB_1"] = calculate_fib(df,fibVal, 1)
 df["FIB_0_772"] = calculate_fib(df,fibVal, 0.772)
@@ -122,10 +127,20 @@ df["FIB_0_428"] = calculate_fib(df,fibVal, 0.428)
 df["FIB_0_228"] = calculate_fib(df,fibVal, 0.228)
 df["FIB_0"] = calculate_fib(df,fibVal, 0)  
 
+attributes2 = ["datetime","open","high","low","close","Adj Close","Volume"]
+df2 = pd.read_csv(csvName2, names = attributes2)
+
+df2['open'] = df2['open'].astype('float')
+df2['close'] = df2['close'].astype('float')
+df2['high'] = df2['high'].astype('float')
+df2['low'] = df2['low'].astype('float')
+
 print("Strategy Back Test is starting...\n")
 
-for i in range(df.shape[0]):
-    if i > (fibVal * 2):        
+for k in range(df.shape[0]):
+    i = k / 15
+    i = int(i) - 1
+    if i > (fibVal + 1):        
 
         fib_1_000_price = round(df["FIB_1"][i],7)
         fib_0_772_price = round(df["FIB_0_772"][i],7)
@@ -136,10 +151,10 @@ for i in range(df.shape[0]):
         fib_0_000_price = round(df["FIB_0"][i],7)
         ema_price = round(df["EMA"][i],4)
 
-        open_price = round(df['open'][i],7)
-        high_price = round(df['high'][i],7)
-        low_price = round(df['low'][i],7)
-        close_price = round(df['close'][i],7)
+        open_price = round(df2['open'][k],7)
+        high_price = round(df2['high'][k],7)
+        low_price = round(df2['low'][k],7)
+        close_price = round(df2['close'][k],7)
 
         long_signal = ema_price > fib_0_500_price  
         short_signal = ema_price < fib_0_500_price
@@ -151,7 +166,7 @@ for i in range(df.shape[0]):
 
             if (bantReferans >= bantMinimumOran):
                 start = True
-                startTime =  df["openTime"][i]
+                startTime =  df2["datetime"][k]
 
                 referansOrtaFiyat = fib_0_500_price
 
@@ -207,7 +222,7 @@ for i in range(df.shape[0]):
             karOrani = (longKarFiyat / longGirisFiyat) - 1 
 
             debugMsg += warn + " LONG Position Open\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -226,7 +241,7 @@ for i in range(df.shape[0]):
             debugMsg += str(toplamIslemSayisi) + " Signal\n"
             debugMsg += "\n"
             debugMsg += warn + " LONG Position Close Take Profit\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -251,7 +266,7 @@ for i in range(df.shape[0]):
             debugMsg += str(toplamIslemSayisi) + " Signal\n"
             debugMsg += "\n"
             debugMsg += warn + " LONG Position Close Stop Loss\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -279,7 +294,7 @@ for i in range(df.shape[0]):
             karOrani = (shortGirisFiyat / shortKarFiyat) - 1 
 
             debugMsg += warn + " SHORT Position Open\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -298,7 +313,7 @@ for i in range(df.shape[0]):
             debugMsg += str(toplamIslemSayisi) + " Signal\n"
             debugMsg += "\n"
             debugMsg += warn + " SHORT Position Close Take Profit\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order TP\t: " + str(round(hedefFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -323,7 +338,7 @@ for i in range(df.shape[0]):
             debugMsg += str(toplamIslemSayisi) + " Signal\n"
             debugMsg += "\n"
             debugMsg += warn + " SHORT Position Close Stop Loss\n"
-            debugMsg += "Order Time\t: " + str(df["openTime"][i]) + "\n"
+            debugMsg += "Order Time\t: " + str(df2["datetime"][k]) + "\n"
             debugMsg += "Order Price\t: " + str(round(islemFiyati,7)) + "\n"
             debugMsg += "Order SL\t: " + str(round(stopFiyati,7)) + "\n"
             debugMsg += "Order LOT/FIAT\t: " + str(round(cuzdan * kaldirac,7)) + "\n"
@@ -348,6 +363,8 @@ for i in range(df.shape[0]):
         if cuzdan < 10:
             print("\nCüzdanda Para Kalmadı\n")
             quit()   
+
+    
      
 debugMsg = ""
 debugMsg += "\n"
@@ -355,6 +372,7 @@ debugMsg += "****************************************\n"
 debugMsg += "\n"
 debugMsg += "Report\n"
 debugMsg += "\n"
+debugMsg += "Date\t\t: " + startDate + " - " + endDate + "\n"
 debugMsg += "Strategy\t: " + str(symbol) + " (" + str(kaldirac) + "x) (" + str(interval) + ") (FIB " + str(fibVal) + ") (EMA " + str(emaVal) + " " + str(emaType) + ")\n"
 debugMsg += "Invest\t\t: " + str(round(baslangicPara,7)) + "\n"
 debugMsg += "ROI\t\t: " + str(round(toplamKar,7)) + "\n"

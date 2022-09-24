@@ -58,7 +58,7 @@ short_signal = False
 # Sinyal Değerleri
 emaLong = 1   
 emaLongType = "close"
-emaShort = 3    
+emaShort = 8    
 emaShortType = "close"
 emaHigh = 1   
 emaHighType = "high"
@@ -71,12 +71,12 @@ toplamKarliIslemSayisi = 0
 toplamZararKesIslemSayisi = 0
 
 # Parite Bilgileri
-symbol = "DARUSDT"
+symbol = "KNCUSDT"
 interval = "1m"
 #timeFrame = 1
 #limit = emaShort * 4
 
-get_historical_data_symbol("Future", symbol, "3 May, 2022", "4 May, 2022", interval)
+get_historical_data_symbol("Future", symbol, "17 Sep, 2022", "18 Sep, 2022", interval)
 
 #csvName = "Historical_Data/" + coin + "_" + timeFrame + ".csv"
 csvName = symbol + "_" + interval + ".csv"
