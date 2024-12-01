@@ -87,7 +87,7 @@ def get_historical_data_symbol(market, symbol, startDateOfData, endDateOfData, t
     print("Finished Data Downloading...")
 
 # Get Symbol Lists of Market (Future or Spot)
-def get_symbol_list(asset, market):    
+def get_symbol_list(market, asset="USDT"):    
     if (market == "Spot"):
         coins = client.get_exchange_info()
     elif (market == "Future"):
