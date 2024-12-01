@@ -26,10 +26,20 @@ id_channel_01   = "-1001492284839"   # Grup ID(TMT Channel_01)
 id_channel_02   = "-1001630300483"   # Grup ID(TMT Channel_02)
 id_channel_03   = "-1001689764244"   # Grup ID(TMT Channel_03)
 
+id_channel_04 = "-1001509604144"  # 5m-15m
+id_channel_05 = "-1001625055452"  # 15m-1h
+id_channel_06 = "-1001628871969"  # 1h-4h
+id_channel_07 = "-1001692848554"  # 4h-1d
+
 channel_00   = "channel_00"
 channel_01   = "channel_01"
 channel_02   = "channel_02"
 channel_03   = "channel_03"
+
+channel_04   = "channel_04"
+channel_05   = "channel_05"
+channel_06   = "channel_06"
+channel_07   = "channel_07"
 
 
 def send_message_to_telegram(channelID, message): 
@@ -46,6 +56,14 @@ def send_message_to_telegram(channelID, message):
             requests.post(url=message_url ,data={"chat_id":id_channel_02,"text":message}).json()               
         elif(channelID == channel_03):
             requests.post(url=message_url ,data={"chat_id":id_channel_03,"text":message}).json()  
+        elif(channelID == channel_04):
+            requests.post(url=message_url ,data={"chat_id":id_channel_04,"text":message}).json() 
+        elif(channelID == channel_05):
+            requests.post(url=message_url ,data={"chat_id":id_channel_05,"text":message}).json() 
+        elif(channelID == channel_06):
+            requests.post(url=message_url ,data={"chat_id":id_channel_06,"text":message}).json() 
+        elif(channelID == channel_07):
+            requests.post(url=message_url ,data={"chat_id":id_channel_07,"text":message}).json() 
 
     #thread ile fonksiyonu başlatır 
     th = Thread(target=thread1) 
