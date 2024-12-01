@@ -1,11 +1,12 @@
 from time import sleep   
-from telegram_bot import warn, send_message_to_telegram, channelTarama
+from telegram_bot import warn, send_message_to_telegram, channel_04
 from datetime import datetime 
 from data_manager import get_symbol_list, get_calculated_hype_symbol_list
 from threading import Thread
 
-symbolListFuture = get_symbol_list("USDT", "Future")
-symbolListSpot = get_symbol_list("USDT", "Spot")
+symbolListFuture = get_symbol_list("Future")
+symbolListSpot = get_symbol_list("Spot")
+
 
 def do_work_hype_coin_scanning(market): 
     global symbolListFuture
@@ -33,14 +34,14 @@ def do_work_hype_coin_scanning(market):
         debugMsg += str(key) + " : " + str(value) + "\n"       
         counter = counter + 1
 
-    send_message_to_telegram(channelTarama, debugMsg)
+    send_message_to_telegram(channel_04, debugMsg)
     debugMsg = ""
 
     if(datetime.now().minute == 0):
         if (market == "Future"):
-            symbolListFuture = get_symbol_list("USDT", "Future")
+            symbolListFuture = get_symbol_list("Future")
         elif (market == "Spot"):
-            symbolListSpot = get_symbol_list("USDT", "Spot")   
+            symbolListSpot = get_symbol_list("Spot")   
 
 while (1):
     if (datetime.now().second == 1):
