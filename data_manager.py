@@ -8,6 +8,7 @@ from datetime import timedelta
 import pandas_ta as tb
 from operator import index
 import operator
+from binance.exceptions import BinanceAPIException, BinanceRequestException
 
 """
 # https://www.binance.com/en/landing/data
@@ -91,10 +92,12 @@ def get_symbol_list(market, asset="USDT"):
     if (market == "Spot"):
         coins = client.get_exchange_info()
     elif (market == "Future"):
-        coins = client.futures_exchange_info()
+        coins = client.futures_exchange_info()        
 
     symbol_list = []
     for coin in coins['symbols']:
+            if (market == "Future") and (coin["baseAsset"] == "BTCST"):
+                continue
             if coin['quoteAsset'] == asset:  
                 symbol_list.append(coin["baseAsset"] + asset) 
     
@@ -126,14 +129,21 @@ def get_calculated_hype_symbol_list(market, interval, symbolList):
     candleTime = 0
 
     # Teknik Analiz
-    rsiPeriod = 13
+    rsiPeriod = 8
     limit = rsiPeriod * 6
 
     for symbol in symbolList:
         if (market == "Spot"):
             candles = client.get_klines(symbol=symbol, interval=interval, limit=limit) 
         elif (market == "Future"):
-            candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
+            try:
+                candles = client.futures_klines(symbol=symbol, interval=interval, limit=limit)
+            except BinanceAPIException as e:
+                print(f"Binance API hatası: {e}" + " " + symbol)
+            except BinanceRequestException as e:
+                print(f"Bağlantı hatası: {e}")
+            except Exception as e:
+                print(f"Bilinmeyen hata: {e}")
 
         ## Get Data
         df = pd.DataFrame(candles, columns=['openTime', 'open', 'high', 'low', 'close', 'volume', 'closeTime', 

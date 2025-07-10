@@ -3,7 +3,7 @@ from telegram_bot import warn, send_message_to_telegram, channel_00, channel_04
 import pandas as pd
 import time
 
-VOLUME_RATIO = 1.3
+VOLUME_RATIO = 1.2
 
 TIME_FRAME = "1d"
 CANDLE_COUNT = 3
@@ -78,7 +78,7 @@ def get_bist_symbols():
 def get_last_ohlcv(symbol):
     try:
         # Yahoo Finance üzerinden veri çek (1 günlük son 3 mum)
-        data = yf.download(symbol, period="7d", interval=TIME_FRAME)[-3:]
+        data = yf.download(symbol, period="1d", interval=TIME_FRAME)[-3:]
         if data.empty:
             print(f"{symbol} için veri alınamadı.")
             return None
@@ -94,11 +94,16 @@ def get_last_ohlcv(symbol):
 def is_volume_increasing_by_percent(df):
     if len(df) < 3:
         return False
-    # Hacimlerin %40 artıp artmadığını kontrol et
+    # Hacimlerin % artıp artmadığını kontrol et
+    # Long için kapanış fiyatları birbirinden yüksek olsun
     vol_1 = df["volume"].iloc[0]
+    close_1 = df["close"].iloc[0]
     vol_2 = df["volume"].iloc[1]
+    close_2 = df["close"].iloc[1]
     vol_3 = df["volume"].iloc[2]
-    return (vol_2 > vol_1 * VOLUME_RATIO) and (vol_3 > vol_2 * VOLUME_RATIO)
+    close_3 = df["close"].iloc[2]
+    return (vol_3 > (vol_2 * VOLUME_RATIO)) and (close_3 > close_2) # sadece son iki muma bak günlük veri
+    #return (vol_2 > vol_1 * VOLUME_RATIO) and (vol_3 > vol_2 * VOLUME_RATIO)
 
 # 4. Tüm BIST Sembollerini Tarayarak Şartı Sağlayanları Bul
 def scan_bist_symbols_with_increasing_volume():

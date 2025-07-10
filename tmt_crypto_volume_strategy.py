@@ -24,11 +24,14 @@ import time
 # Binance API Anahtarları
 API_KEY = ""  # API anahtarınızı buraya yazın
 API_SECRET = ""  # Secret anahtarınızı buraya yazın
+EXCHANGE = "BINANCE"
 
-VOLUME_RATIO = 1.3
+VOLUME_RATIO = 1.1
 
 TIME_FRAME = Client.KLINE_INTERVAL_4HOUR
 CANDLE_COUNT = 3
+
+IS_TELEGRAM_MSG_ACTIVE = True
 
 # Binance Client'ını başlat
 client = Client(API_KEY, API_SECRET)
@@ -58,15 +61,18 @@ def get_last_ohlcv(symbol):
         print(f"Veri alınırken hata oluştu: {symbol}, Hata: {e}")
         return None
 
-# 3. Hacmi Artan ve Yüzde 30 Kuralını Sağlayan Çiftleri Kontrol Et
+# 3. Hacmi Artan ve Yüzde Kuralını Sağlayan Çiftleri Kontrol Et
 def is_volume_increasing_by_percent(df):
     if len(df) < 3:
         return False
     # Hacimlerin %40 artıp artmadığını kontrol et
     vol_1 = df["volume"].iloc[0]
+    close_1 = df["close"].iloc[0]
     vol_2 = df["volume"].iloc[1]
+    close_2 = df["close"].iloc[1]
     vol_3 = df["volume"].iloc[2]
-    return (vol_2 > vol_1 * VOLUME_RATIO) and (vol_3 > vol_2 * VOLUME_RATIO)
+    close_3 = df["close"].iloc[2]
+    return (vol_2 > (vol_1 * VOLUME_RATIO)) & (close_2 > close_1) & (close_3 > close_2) #(vol_3 > vol_2 * VOLUME_RATIO)
 
 # 4. Tüm USDT Coinlerini Tarayarak Şartı Sağlayanları Bul
 def scan_usdt_symbols_with_increasing_volume():
@@ -76,11 +82,11 @@ def scan_usdt_symbols_with_increasing_volume():
     for symbol in symbols:
         df = get_last_ohlcv(symbol)
         if df is not None and is_volume_increasing_by_percent(df):
-            last_volume = df["volume"].iloc[-1]
-            last_close = df["close"].iloc[-1]
+            last_volume = df["volume"].iloc[-2]
+            last_close = df["close"].iloc[-2]
             volume_value = last_volume * last_close
             increasing_volume_symbols.append({"symbol": symbol, "volume_value": volume_value})
-            print(f"Hacmi artan çift bulundu: {symbol}, İşlem Hacmi: {volume_value:,.2f}")
+            print(f"Hacmi artan çift bulundu: {symbol}, İşlem Hacmi: {volume_value:,.2f} $")
         # Her istekten sonra bekle
         time.sleep(0.05)
 
@@ -93,11 +99,15 @@ if __name__ == "__main__":
     results = scan_usdt_symbols_with_increasing_volume()
 
     # Sıralanmış sonuçları al ve satır başına bir sembol olacak şekilde formatla
-    sorted_results = [f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $) " for item in results]
+    sorted_results = [f"{item['symbol']}.P (Volume: {item['volume_value']:,.2f} $)\n" for item in results]
+    #sorted_results = [f"{item['symbol']}: https://www.tradingview.com/chart/?symbols={EXCHANGE}%3A{item['symbol']}.P" for item in results]
     formatted_message = "\n".join(sorted_results)
     
-    # Telegram mesajı gönder
-    debugMsg = f"***\nTime Frame : {TIME_FRAME} \nCandle : {CANDLE_COUNT}\n***\n\n" + f"*** RESULTS ***\n\n{formatted_message}\n"
+    # Debug ve Telegram mesajı gönder
+    debugMsg = f"***\nTime Frame : {TIME_FRAME}\nCandle : {CANDLE_COUNT}\n***\n\n" + f"*** RESULTS ***\n\n{formatted_message}\n"    
     print(debugMsg)
-    send_message_to_telegram(channel_00, debugMsg)
-    send_message_to_telegram(channel_04, debugMsg)
+
+    if IS_TELEGRAM_MSG_ACTIVE == True:
+        channelMsg = f"***\nTime Frame : {TIME_FRAME}\n***\n\n" + f"*** RESULTS ***\n\n{formatted_message}\n"
+        send_message_to_telegram(channel_00, channelMsg)
+        send_message_to_telegram(channel_04, channelMsg)
