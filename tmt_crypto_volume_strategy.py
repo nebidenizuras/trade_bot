@@ -120,6 +120,9 @@ def wait_until_minute(minute=55):
 
 # Çalıştırma
 if __name__ == "__main__":
+    send_message_to_telegram(channel_00, "TMT Strategy Is Started...\n")
+    send_message_to_telegram(channel_04, "TMT Strategy Is Started...\n")
+
     while True:
         wait_until_minute(55)  # her xx:55'te tetikle
 
