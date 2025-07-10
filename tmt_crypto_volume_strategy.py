@@ -2,6 +2,7 @@ from binance.client import Client
 from telegram_bot import warn, send_message_to_telegram, channel_00, channel_04
 import pandas as pd
 import time
+import datetime
 
 """
     KLINE_INTERVAL_1MINUTE = '1m'
@@ -72,7 +73,7 @@ def is_volume_increasing_by_percent(df):
     close_2 = df["close"].iloc[1]
     vol_3 = df["volume"].iloc[2]
     close_3 = df["close"].iloc[2]
-    return (vol_2 > (vol_1 * VOLUME_RATIO)) & (close_2 > close_1) & (close_3 > close_2) #(vol_3 > vol_2 * VOLUME_RATIO)
+    return (vol_3 > (vol_2 * VOLUME_RATIO)) & (close_3 > close_2) & (close_3 > close_2) #(vol_3 > vol_2 * VOLUME_RATIO)
 
 # 4. Tüm USDT Coinlerini Tarayarak Şartı Sağlayanları Bul
 def scan_usdt_symbols_with_increasing_volume():
@@ -94,20 +95,39 @@ def scan_usdt_symbols_with_increasing_volume():
     sorted_symbols = sorted(increasing_volume_symbols, key=lambda x: x["volume_value"], reverse=True)
     return sorted_symbols
 
+def send_results_in_chunks(result_list, chunk_size=10):
+    """
+    Telegram'a mesajları x'erli gruplar halinde gönder
+    """
+    for i in range(0, len(result_list), chunk_size):
+        chunk = result_list[i:i+chunk_size]
+        formatted_message = "\n".join(chunk)
+        debugMsg = f"***\nTime Frame : {TIME_FRAME}\nCandle : {CANDLE_COUNT}\n***\n\n*** RESULTS ***\n\n{formatted_message}\n"
+        print(debugMsg)
+
+        if IS_TELEGRAM_MSG_ACTIVE:
+            channelMsg = f"***\nTime Frame : {TIME_FRAME}\n***\n\n*** RESULTS ***\n\n{formatted_message}\n"
+            send_message_to_telegram(channel_00, channelMsg)
+            send_message_to_telegram(channel_04, channelMsg)
+
+def wait_until_minute(minute=55):
+    while True:
+        now = datetime.datetime.now()
+        if now.minute == minute:
+            break
+        wait_seconds = 60 - now.second
+        time.sleep(wait_seconds)              
+
 # Çalıştırma
 if __name__ == "__main__":
-    results = scan_usdt_symbols_with_increasing_volume()
+    while True:
+        wait_until_minute(55)  # her xx:55'te tetikle
 
-    # Sıralanmış sonuçları al ve satır başına bir sembol olacak şekilde formatla
-    sorted_results = [f"{item['symbol']}.P (Volume: {item['volume_value']:,.2f} $)\n" for item in results]
-    #sorted_results = [f"{item['symbol']}: https://www.tradingview.com/chart/?symbols={EXCHANGE}%3A{item['symbol']}.P" for item in results]
-    formatted_message = "\n".join(sorted_results)
-    
-    # Debug ve Telegram mesajı gönder
-    debugMsg = f"***\nTime Frame : {TIME_FRAME}\nCandle : {CANDLE_COUNT}\n***\n\n" + f"*** RESULTS ***\n\n{formatted_message}\n"    
-    print(debugMsg)
+        results = scan_usdt_symbols_with_increasing_volume()
 
-    if IS_TELEGRAM_MSG_ACTIVE == True:
-        channelMsg = f"***\nTime Frame : {TIME_FRAME}\n***\n\n" + f"*** RESULTS ***\n\n{formatted_message}\n"
-        send_message_to_telegram(channel_00, channelMsg)
-        send_message_to_telegram(channel_04, channelMsg)
+        sorted_results = [f"{item['symbol']}.P (Volume: {item['volume_value']:,.2f} $)\n" for item in results[:10]]
+
+        send_results_in_chunks(sorted_results)
+
+        # 60 saniye bekleyerek tekrar xx:55’e kadar boş döngü engellenir
+        time.sleep(60)
