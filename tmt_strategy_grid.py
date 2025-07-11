@@ -339,7 +339,7 @@ while(True):
             debugMsg += "SL Orders\t: " + str(toplamZararKesIslemSayisi) + "\n"
             debugMsg += "Gain Orders\t: % " + str(round((toplamKarliIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"
             debugMsg += "Lose Orders\t: % " + str(round((toplamZararKesIslemSayisi / toplamIslemSayisi) * 100,1)) + "\n"        
-            send_message_to_telegram(id_channel_00, debugMsg)
+            send_message_to_telegram(channel_00, debugMsg)
             debugMsg = "" 
                 
             islemBitti = False
@@ -352,7 +352,7 @@ while(True):
 
         if (cuzdan + 10) < toplamFee:
             debugMsg = warn + warn + warn + "\nCüzdanda Para Kalmadı\n" + warn + warn + warn
-            send_message_to_telegram(id_channel_00, debugMsg)
+            send_message_to_telegram(channel_00, debugMsg)
             debugMsg = "" 
             quit() 
 
@@ -360,6 +360,6 @@ while(True):
     except Exception as e:
         debugMsg = "Error : " + str(e) + "\n\n\n"
         debugMsg += warn + "\nSistem Durduruluyor...\n" + warn
-        send_message_to_telegram(id_channel_00, debugMsg)
+        send_message_to_telegram(channel_00, debugMsg)
         debugMsg = ""
         quit()
