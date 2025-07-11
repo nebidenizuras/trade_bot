@@ -99,6 +99,12 @@ def send_results_in_chunks(result_list, chunk_size=10):
     """
     Telegram'a mesajları x'erli gruplar halinde gönder
     """
+
+    if len(result_list) < 1:
+        channelMsg = f"***\nBulunamadı !\n***\n"
+        send_message_to_telegram(channel_00, channelMsg)
+        send_message_to_telegram(channel_04, channelMsg)
+        
     for i in range(0, len(result_list), chunk_size):
         chunk = result_list[i:i+chunk_size]
         formatted_message = "\n".join(chunk)
@@ -109,6 +115,7 @@ def send_results_in_chunks(result_list, chunk_size=10):
             channelMsg = f"***\nTime Frame : {TIME_FRAME}\n***\n\n*** RESULTS ***\n\n{formatted_message}\n"
             send_message_to_telegram(channel_00, channelMsg)
             send_message_to_telegram(channel_04, channelMsg)
+
 
 def wait_until_minute(minute=55):
     while True:
@@ -124,7 +131,7 @@ if __name__ == "__main__":
     send_message_to_telegram(channel_04, "TMT Strategy Is Started...\n")
 
     while True:
-        wait_until_minute(55)  # her xx:55'te tetikle
+        #wait_until_minute(55)  # her xx:55'te tetikle
 
         results = scan_usdt_symbols_with_increasing_volume()
 
@@ -133,4 +140,4 @@ if __name__ == "__main__":
         send_results_in_chunks(sorted_results)
 
         # 60 saniye bekleyerek tekrar xx:55’e kadar boş döngü engellenir
-        time.sleep(60)
+        time.sleep(600)
