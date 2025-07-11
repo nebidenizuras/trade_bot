@@ -31,9 +31,9 @@ id_channel_05 = "-1001625055452"  # 15m-1h
 id_channel_06 = "-1001628871969"  # 1h-4h
 id_channel_07 = "-1001692848554"  # 4h-1d
 
-channel_00   = "channel_00"
-channel_01   = "channel_01"
-channel_02   = "channel_02"
+channel_00   = "channel_00" #CRYPTO-1D
+channel_01   = "channel_01" #CRYPTO-4H
+channel_02   = "channel_02" #CRYPTO-1H
 channel_03   = "channel_03"
 
 channel_04   = "channel_04"

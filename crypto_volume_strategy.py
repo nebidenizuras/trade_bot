@@ -1,5 +1,5 @@
 from binance.client import Client
-from telegram_bot import send_message_to_telegram, channel_00, channel_04
+from telegram_bot import send_message_to_telegram, channel_00, channel_01, channel_02
 import pandas as pd
 import time
 from datetime import datetime, UTC
@@ -21,6 +21,12 @@ TIMEFRAME_CONFIG = {
     "1d": 3,
 }
 
+# Timeframe bazlı Telegram kanal ID'leri
+channel_by_timeframe = {
+    "1h": channel_02,
+    "4h": channel_01,
+    "1d": channel_00,
+}
 
 def get_usdt_symbols():
     exchange_info = client.futures_exchange_info()
@@ -82,21 +88,24 @@ def scan_symbols(timeframe, candle_count):
 
     sorted_results = sorted(results, key=lambda x: x["volume_value"], reverse=True)
     send_results(sorted_results[:10], timeframe)
-
+    
 
 def send_results(result_list, timeframe):
+    channel_id = channel_by_timeframe.get(timeframe)
+
     if not result_list:
         msg = f"***\n{timeframe.upper()} taramasında uygun coin bulunamadı.\n***"
-        send_message_to_telegram(channel_00, msg)
-        send_message_to_telegram(channel_04, msg)
+        if channel_id:
+            send_message_to_telegram(channel_id, msg)
         return
 
     formatted = "\n".join([f"{item['symbol']}.P (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
     msg = f"***\nTime Frame: {timeframe.upper()}\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
+
     print(msg)
-    if IS_TELEGRAM_MSG_ACTIVE:
-        send_message_to_telegram(channel_00, msg)
-        send_message_to_telegram(channel_04, msg)
+
+    if IS_TELEGRAM_MSG_ACTIVE and channel_id:
+        send_message_to_telegram(channel_id, msg)
 
 
 def is_time_to_run(now: datetime, tf: str) -> bool:
@@ -128,6 +137,9 @@ def scheduler_loop():
 
 
 if __name__ == "__main__":
-    send_message_to_telegram(channel_00, "🔔 TMT Volume Strategy başlatıldı.")
-    send_message_to_telegram(channel_04, "🔔 TMT Volume Strategy başlatıldı.")
+    # Her timeframe için kendi kanalına başlangıç mesajı gönder
+    for tf, channel in channel_by_timeframe.items():
+        send_message_to_telegram(channel, f"🔔 TMT Volume Strategy `{tf}` zaman dilimi için başlatıldı.")
+    
+    # Zamanlayıcıyı başlat
     scheduler_loop()
