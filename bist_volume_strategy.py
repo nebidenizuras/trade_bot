@@ -7,10 +7,10 @@ from telegram_bot import send_message_to_telegram, channel_04
 
 # Örnek BIST sembolleri (kendi listenle değiştir)
 BIST_SYMBOLS = [
-            "A1CAP.IS","ACSEL.IS","ADEL.IS","ADESE.IS","ADGYO.IS","AEFES.IS","AFYON.IS","AGESA.IS","AGHOL.IS","AGROT.IS",
+        "A1CAP.IS","ACSEL.IS","ADEL.IS","ADESE.IS","ADGYO.IS","AEFES.IS","AFYON.IS","AGESA.IS","AGHOL.IS","AGROT.IS",
         "AHGAZ.IS","AHSGY.IS","AKBNK.IS","AKCNS.IS","AKENR.IS","AKFGY.IS","AKFYE.IS","AKGRT.IS","AKSA.IS","AKSEN.IS",
         "AKSUE.IS","AKYHO.IS","ALARK.IS","ALBRK.IS","ALCAR.IS","ALCTL.IS","ALFAS.IS","ALKA.IS","ALKIM.IS","ALKLC.IS",
-        "ALMAD.IS","ALTIN.IS","ALTNY.IS","ALVES.IS","ANELE.IS","ANGEN.IS","ANHYT.IS","ANSGR.IS","ARASE.IS","ARCLK.IS",
+        "ALMAD.IS","ALTNY.IS","ALVES.IS","ANELE.IS","ANGEN.IS","ANHYT.IS","ANSGR.IS","ARASE.IS","ARCLK.IS",
         "ARDYZ.IS","ARSAN.IS","ARTMS.IS","ARZUM.IS","ASELS.IS","ASTOR.IS","ASUZU.IS","ATAKP.IS","ATATP.IS","ATEKS.IS",
         "ATLAS.IS","ATSYH.IS","AVGYO.IS","AVHOL.IS","AVOD.IS","AVPGY.IS","AYDEM.IS","AYEN.IS","AYES.IS","AYGAZ.IS",
         "BAGFS.IS","BAHKM.IS","BAKAB.IS","BALAT.IS","BANVT.IS","BARMA.IS","BASCM.IS","BASGZ.IS","BAYRK.IS","BEGYO.IS",
@@ -32,7 +32,7 @@ BIST_SYMBOLS = [
         "HUBVC.IS","HUNER.IS","HURGZ.IS","ICBCT.IS","ICUGS.IS","IEYHO.IS","IHAAS.IS","IHEVA.IS","IHGZT.IS","IHLAS.IS",
         "IHLGM.IS","IHYAY.IS","IMASM.IS","INFO.IS","INTEK.IS","INVEO.IS","INVES.IS","IPEKE.IS","ISATR.IS","ISBIR.IS",
         "ISBTR.IS","ISCTR.IS","ISDMR.IS","ISFIN.IS","ISGSY.IS","ISGYO.IS","ISKPL.IS","ISKUR.IS","ISMEN.IS","ISSEN.IS",
-        "IZENR.IS","IZFAS.IS","IZINV.IS","IZMDC.IS","JANTS.IS","KAPLM.IS","KAREL.IS","KARSN.IS","KARTN.IS","KARYE.IS",
+        "IZENR.IS","IZFAS.IS","IZINV.IS","IZMDC.IS","JANTS.IS","KAPLM.IS","KAREL.IS","KARSN.IS","KARTN.IS",
         "KATMR.IS","KAYSE.IS","KBORU.IS","KCAER.IS","KCHOL.IS","KENT.IS","KERVN.IS","KERVT.IS","KFEIN.IS","KLKIM.IS",
         "KLMSN.IS","KLNMA.IS","KLRHO.IS","KLSER.IS","KLSYN.IS","KMPUR.IS","KNFRT.IS","KOCMT.IS","KONKA.IS","KONTR.IS",
         "KONYA.IS","KOPOL.IS","KORDS.IS","KOTON.IS","KOZAA.IS","KOZAL.IS","KRDMA.IS","KRDMB.IS","KRDMD.IS","KRONT.IS",
@@ -45,7 +45,7 @@ BIST_SYMBOLS = [
         "ORMA.IS","OSMEN.IS","OSTIM.IS","OTKAR.IS","OTTO.IS","OYAKC.IS","OYAYO.IS","OYLUM.IS","OYYAT.IS","OZATD.IS",
         "OZRDN.IS","OZSUB.IS","OZYSR.IS","PAGYO.IS","PAMEL.IS","PAPIL.IS","PARSN.IS","PATEK.IS","PCILT.IS","PEKGY.IS",
         "PENGD.IS","PETKM.IS","PETUN.IS","PINSU.IS","PKART.IS","PNLSN.IS","PNSUT.IS","POLHO.IS","POLTK.IS","PRDGS.IS",
-        "PRKAB.IS","PRKME.IS","PRZMA.IS","PSGYO.IS","QNBFL.IS","QUAGR.IS","RALYH.IS","RAYSG.IS","REEDR.IS","RGYAS.IS",
+        "PRKAB.IS","PRKME.IS","PRZMA.IS","PSGYO.IS","QUAGR.IS","RALYH.IS","RAYSG.IS","REEDR.IS","RGYAS.IS",
         "RNPOL.IS","RODRG.IS","ROYAL.IS","RTALB.IS","RUBNS.IS","SAFKR.IS","SAHOL.IS","SAMAT.IS","SANEL.IS","SANFM.IS",
         "SARKY.IS","SASA.IS","SAYAS.IS","SDTTR.IS","SEGMN.IS","SEGYO.IS","SEKFK.IS","SEKUR.IS","SELEC.IS","SELGD.IS",
         "SELVA.IS","SEYKM.IS","SILVR.IS","SISE.IS","SKBNK.IS","SKTAS.IS","SKYLP.IS","SKYMD.IS","SMART.IS","SMRTG.IS",
@@ -107,7 +107,7 @@ def scan_symbols():
             print(f"Hata: {symbol} - {e}")
 
     results = sorted(results, key=lambda x: x["volume_value"], reverse=True)
-    return results[:10]
+    return results[:20]
 
 def send_message(channel_id, result_list):
     if not result_list:
@@ -144,8 +144,8 @@ def scheduler_loop():
     while True:
         now = datetime.datetime.now(datetime.timezone.utc)
 
-        # Günlük mum için yeni mum zamanı 23:55 UTC kontrolü
-        if now.hour == 14 and now.minute == 55:
+        # Günlük mum için yeni mum zamanı 17:55 UTC kontrolü
+        if now.hour == 14 and now.minute == 30:
             worker()
 
         time.sleep(30)

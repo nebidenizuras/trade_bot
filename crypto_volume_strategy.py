@@ -4,15 +4,17 @@ import pandas as pd
 import time
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
 
 # Binance API Keys
 API_KEY = ""
 API_SECRET = ""
 client = Client(API_KEY, API_SECRET)
 
-VOLUME_RATIO = 1.1
+# Telegram bildirim açık/kapat
 IS_TELEGRAM_MSG_ACTIVE = True
+
+# Hacim artış oranı
+VOLUME_RATIO = 1.1
 
 # Hangi zaman diliminde kaç mum alınacak
 TIMEFRAME_CONFIG = {
@@ -21,7 +23,7 @@ TIMEFRAME_CONFIG = {
     "1d": 3,
 }
 
-# Timeframe bazlı Telegram kanal ID'leri
+# Telegram kanal ID'leri
 channel_by_timeframe = {
     "1h": channel_02,
     "4h": channel_01,
@@ -29,14 +31,16 @@ channel_by_timeframe = {
 }
 
 def get_usdt_symbols():
-    exchange_info = client.futures_exchange_info()
-    usdt_symbols = [
-        symbol["symbol"]
-        for symbol in exchange_info["symbols"]
-        if symbol["quoteAsset"] == "USDT" and symbol["status"] == "TRADING"
-    ]
-    return usdt_symbols
-
+    try:
+        exchange_info = client.futures_exchange_info()
+        return [
+            symbol["symbol"]
+            for symbol in exchange_info["symbols"]
+            if symbol["quoteAsset"] == "USDT" and symbol["status"] == "TRADING"
+        ]
+    except Exception as e:
+        print(f"❌ Sembol verisi alınamadı: {e}")
+        return []
 
 def get_last_ohlcv(symbol, timeframe, candle_count):
     try:
@@ -51,7 +55,6 @@ def get_last_ohlcv(symbol, timeframe, candle_count):
         print(f"[{timeframe}] Hata: {symbol} - {e}")
         return None
 
-
 def is_volume_increasing_by_percent(df):
     if len(df) < 3:
         return False
@@ -60,7 +63,6 @@ def is_volume_increasing_by_percent(df):
     vol_3 = df["volume"].iloc[2]
     close_3 = df["close"].iloc[2]
     return (vol_3 > vol_2 * VOLUME_RATIO) and (close_3 > close_2)
-
 
 def process_symbol(symbol, timeframe, candle_count):
     df = get_last_ohlcv(symbol, timeframe, candle_count)
@@ -71,24 +73,20 @@ def process_symbol(symbol, timeframe, candle_count):
         return {"symbol": symbol, "volume_value": volume_value}
     return None
 
-
 def scan_symbols(timeframe, candle_count):
     symbols = get_usdt_symbols()
     results = []
-
-    print(f"[{timeframe}] Başlatılıyor...")
+    print(f"🔍 [{timeframe}] taraması başlatıldı. Toplam {len(symbols)} sembol kontrol edilecek...")
 
     with ThreadPoolExecutor(max_workers=30) as executor:
         futures = [executor.submit(process_symbol, symbol, timeframe, candle_count) for symbol in symbols]
-
         for future in as_completed(futures):
             result = future.result()
             if result:
                 results.append(result)
 
     sorted_results = sorted(results, key=lambda x: x["volume_value"], reverse=True)
-    send_results(sorted_results[:10], timeframe)
-    
+    send_results(sorted_results[:20], timeframe)
 
 def send_results(result_list, timeframe):
     channel_id = channel_by_timeframe.get(timeframe)
@@ -97,49 +95,36 @@ def send_results(result_list, timeframe):
         msg = f"***\n{timeframe.upper()} taramasında uygun coin bulunamadı.\n***"
         if channel_id:
             send_message_to_telegram(channel_id, msg)
+        print(msg)
         return
 
-    formatted = "\n".join([f"{item['symbol']}.P (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
+    formatted = "\n".join([f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
     msg = f"***\nTime Frame: {timeframe.upper()}\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
 
     print(msg)
-
     if IS_TELEGRAM_MSG_ACTIVE and channel_id:
         send_message_to_telegram(channel_id, msg)
-
-
-def is_time_to_run(now: datetime, tf: str) -> bool:
-    if tf == "1h":
-        return now.minute == 55
-    elif tf == "4h":
-        return now.minute == 55 and now.hour % 4 == 3
-    elif tf == "1d":
-        return now.minute == 55 and now.hour == 23
-    return False
-
 
 def scheduler_loop():
     print("🔁 Zamanlayıcı başlatıldı...")
     already_run = set()
 
     while True:
-        datetime.now(timezone.utc)  # UTC zamanı kullanılır
-        current_key = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+        now = datetime.now(timezone.utc)
+        current_key = now.strftime("%Y-%m-%d %H:%M")
 
-        for tf, candle_count in TIMEFRAME_CONFIG.items():
-            if is_time_to_run(datetime.now(timezone.utc), tf):
-                unique_id = f"{tf}-{current_key}"
-                if unique_id not in already_run:
-                    already_run.add(unique_id)
-                    threading.Thread(target=scan_symbols, args=(tf, candle_count), daemon=True).start()
-
-        time.sleep(30)  # Her 30 saniyede bir kontrol et
-
+        if now.minute == 57:
+            if f"{current_key}" not in already_run:
+                already_run.add(f"{current_key}")
+                for tf in ["1h", "4h", "1d"]:
+                    try:
+                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                    except Exception as e:
+                        print(f"❌ {tf} taraması sırasında hata: {e}")
+        time.sleep(30)
 
 if __name__ == "__main__":
-    # Her timeframe için kendi kanalına başlangıç mesajı gönder
+    # Başlangıç mesajı
     for tf, channel in channel_by_timeframe.items():
         send_message_to_telegram(channel, f"🔔 TMT Volume Strategy `{tf}` zaman dilimi için başlatıldı.")
-    
-    # Zamanlayıcıyı başlat
     scheduler_loop()

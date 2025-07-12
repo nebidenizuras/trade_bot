@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import time
 import datetime
-from telegram_bot import send_message_to_telegram, channel_06  # ABD için farklı kanal
+from telegram_bot import send_message_to_telegram, channel_05  # ABD için farklı kanal
 
 US_SYMBOLS = [
     'A', 'AAL', 'AAP', 'AAPL', 'ABBV', 'ABT', 'ACN', 'ADBE', 'ADI', 'ADM', 'ADP', 'ADSK', 'AEE', 'AEP', 'AES', 'AFL',
@@ -48,7 +48,7 @@ TIMEFRAME = "1d"
 INTERVAL = "1d"
 
 # Telegram kanal
-CHANNEL = channel_06
+CHANNEL = channel_05
 
 def is_volume_increasing(df):
     if len(df) < 3:
@@ -82,7 +82,7 @@ def scan_symbols():
             print(f"Hata: {symbol} - {e}")
 
     results = sorted(results, key=lambda x: x["volume_value"], reverse=True)
-    return results[:10]
+    return results[:20]
 
 def send_message(channel_id, result_list):
     if not result_list:
