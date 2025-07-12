@@ -2,7 +2,7 @@ from binance.client import Client
 from telegram_bot import send_message_to_telegram, channel_00, channel_01, channel_02
 import pandas as pd
 import time
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
@@ -123,11 +123,11 @@ def scheduler_loop():
     already_run = set()
 
     while True:
-        now = datetime.now(UTC)  # UTC zamanı kullanılır
-        current_key = now.strftime("%Y-%m-%d %H:%M")
+        datetime.now(timezone.utc)  # UTC zamanı kullanılır
+        current_key = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
         for tf, candle_count in TIMEFRAME_CONFIG.items():
-            if is_time_to_run(now, tf):
+            if is_time_to_run(datetime.now(timezone.utc), tf):
                 unique_id = f"{tf}-{current_key}"
                 if unique_id not in already_run:
                     already_run.add(unique_id)
