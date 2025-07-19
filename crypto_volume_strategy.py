@@ -1,5 +1,5 @@
 from binance.client import Client
-from telegram_bot import send_message_to_telegram, channel_00, channel_01, channel_02
+from telegram_bot import send_message_to_telegram, channel_00, channel_01, channel_02, channel_03
 import pandas as pd
 import time
 from datetime import datetime, timezone
@@ -18,6 +18,7 @@ VOLUME_RATIO = 1.1
 
 # Hangi zaman diliminde kaç mum alınacak
 TIMEFRAME_CONFIG = {
+    "15m": 3,
     "1h": 3,
     "4h": 3,
     "1d": 3,
@@ -25,6 +26,7 @@ TIMEFRAME_CONFIG = {
 
 # Telegram kanal ID'leri
 channel_by_timeframe = {
+    "15m": channel_03,
     "1h": channel_02,
     "4h": channel_01,
     "1d": channel_00,
@@ -120,7 +122,17 @@ def scheduler_loop():
                     try:
                         scan_symbols(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
-                        print(f"❌ {tf} taraması sırasında hata: {e}")
+                        print(f"❌ {tf} taraması sırasında hata: {e}")      
+
+        if now.minute == 14 or now.minute == 29 or now.minute == 44 or now.minute == 59:
+            if f"{current_key}" not in already_run:
+                already_run.add(f"{current_key}")
+                for tf in ["15m"]:
+                    try:
+                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                    except Exception as e:
+                        print(f"❌ {tf} taraması sırasında hata: {e}")                
+        
         time.sleep(30)
 
 if __name__ == "__main__":

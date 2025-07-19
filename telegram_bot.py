@@ -34,10 +34,10 @@ id_channel_07 = "-1001692848554"  # 4h-1d
 channel_00   = "channel_00" #CRYPTO-1D
 channel_01   = "channel_01" #CRYPTO-4H
 channel_02   = "channel_02" #CRYPTO-1H
-channel_03   = "channel_03"
+channel_03   = "channel_03" #CRYPTO-15m
 
-channel_04   = "channel_04"
-channel_05   = "channel_05"
+channel_04   = "channel_04" #BIST-1D
+channel_05   = "channel_05" #USSTOCK-1D
 channel_06   = "channel_06"
 channel_07   = "channel_07"
 
