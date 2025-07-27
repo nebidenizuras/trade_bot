@@ -107,8 +107,6 @@ def worker():
     send_message(CHANNEL, results)
 
 def scheduler_loop():
-    print("⏳ ABD hisseleri için günlük zamanlayıcı başladı.")
-    send_message_to_telegram(CHANNEL, "1d timeframe taraması başlatıldı.")
     worker()
 
     while True:
@@ -118,5 +116,6 @@ def scheduler_loop():
 
         time.sleep(30)
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
+    send_message_to_telegram(CHANNEL, f"🔔 TMT USSTOCK Strategy 1d zaman dilimi için başlatıldı.")
     scheduler_loop()

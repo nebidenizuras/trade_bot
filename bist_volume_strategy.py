@@ -129,17 +129,15 @@ def worker():
     results = scan_symbols()
 
     if results:
-        message = "*** 1d timeframe hacim artışı sonuçları ***\n\n"
+        message = "*** 1d sonuçları ***\n\n"
         for item in results:
             message += f"{item['symbol']} - İşlem Hacmi: {item['volume_value']:,.2f} TRY\n"
     else:
-        message = "1d timeframe için hacim artışı kriterine uyan hisse bulunamadı."
+        message = "1d tarama kriterine uyan hisse bulunamadı."
 
     send_message(CHANNEL, message)
 
 def scheduler_loop():
-    print("⏳ BIST günlük zamanlayıcı başladı.")
-    send_message_to_telegram(CHANNEL, "1d timeframe taraması başlatıldı.")
     worker()
 
     while True:
@@ -152,4 +150,6 @@ def scheduler_loop():
         time.sleep(30)
 
 if __name__ == "__main__":
+    # Başlangıç mesajı
+    send_message_to_telegram(CHANNEL, f"🔔 TMT BIST Strategy 1d zaman dilimi için başlatıldı.")
     scheduler_loop()

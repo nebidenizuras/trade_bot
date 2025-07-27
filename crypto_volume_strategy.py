@@ -126,7 +126,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")  
 
-        if now.minute == 59:
+        if now.minute == 58:
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
                 for tf in ["1h"]:
@@ -135,7 +135,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")      
 
-        if (now.minute == 58) and (now.hour == 2 or now.hour == 6 or now.hour == 10 or now.hour == 14 or now.hour == 18 or now.hour == 22):
+        if (now.minute == 57) and (now.hour == 2 or now.hour == 6 or now.hour == 10 or now.hour == 14 or now.hour == 18 or now.hour == 22):
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
                 for tf in ["4h"]:
@@ -144,7 +144,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")                  
 
-        if now.minute == 58 and now.hour == 2:
+        if now.minute == 56 and now.hour == 2:
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
                 for tf in ["1d"]:
@@ -158,5 +158,5 @@ def scheduler_loop():
 if __name__ == "__main__":
     # Başlangıç mesajı
     for tf, channel in channel_by_timeframe.items():
-        send_message_to_telegram(channel, f"🔔 TMT Volume Strategy `{tf}` zaman dilimi için başlatıldı.")
+        send_message_to_telegram(channel, f"🔔 TMT CRYPTO Strategy `{tf}` zaman dilimi için başlatıldı.")
     scheduler_loop()
