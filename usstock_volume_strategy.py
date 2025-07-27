@@ -58,12 +58,13 @@ def is_volume_increasing(df):
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
-    vol2 = df['Volume'].iloc[-2]
-    vol3 = df['Volume'].iloc[-1]
-    close2 = df['Close'].iloc[-2]
-    close3 = df['Close'].iloc[-1]
+    vol_2 = df['Volume'].iloc[-2]
+    close_2 = df['Close'].iloc[-2]
+    vol_3 = df['Volume'].iloc[-1]
+    close_3 = df['Close'].iloc[-1]
+    open_3 = df["Open"].iloc[-1]
 
-    return (vol3 > vol2 * VOLUME_RATIO) and (close3 > close2)
+    return (vol_3 > vol_2 * VOLUME_RATIO) and (close_3 > close_2) and (close_3 > open_3)
 
 def scan_symbols():
     results = []

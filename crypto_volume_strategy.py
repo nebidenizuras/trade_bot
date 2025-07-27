@@ -60,17 +60,19 @@ def get_last_ohlcv(symbol, timeframe, candle_count):
 def is_volume_increasing_by_percent(df):
     if len(df) < 3:
         return False
-    vol_2 = df["volume"].iloc[1]
-    close_2 = df["close"].iloc[1]
-    vol_3 = df["volume"].iloc[2]
-    close_3 = df["close"].iloc[2]
-    return (vol_3 > vol_2 * VOLUME_RATIO) and (close_3 > close_2)
+    vol_2 = df["volume"].iloc[-2]
+    close_2 = df["close"].iloc[-2]
+    vol_3 = df["volume"].iloc[-1]
+    close_3 = df["close"].iloc[-1]
+    open_3 = df["open"].iloc[-1]
+
+    return (vol_3 > (vol_2 * VOLUME_RATIO)) and (close_3 > close_2) and (close_3 > open_3)
 
 def process_symbol(symbol, timeframe, candle_count):
     df = get_last_ohlcv(symbol, timeframe, candle_count)
     if df is not None and is_volume_increasing_by_percent(df):
-        last_volume = df["volume"].iloc[-2]
-        last_close = df["close"].iloc[-2]
+        last_volume = df["volume"].iloc[-1]
+        last_close = df["close"].iloc[-1]
         volume_value = last_volume * last_close
         return {"symbol": symbol, "volume_value": volume_value}
     return None
@@ -115,15 +117,6 @@ def scheduler_loop():
         now = datetime.now(timezone.utc)
         current_key = now.strftime("%Y-%m-%d %H:%M")
 
-        if now.minute == 57:
-            if f"{current_key}" not in already_run:
-                already_run.add(f"{current_key}")
-                for tf in ["1h", "4h", "1d"]:
-                    try:
-                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
-                    except Exception as e:
-                        print(f"❌ {tf} taraması sırasında hata: {e}")      
-
         if now.minute == 14 or now.minute == 29 or now.minute == 44 or now.minute == 59:
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
@@ -131,7 +124,34 @@ def scheduler_loop():
                     try:
                         scan_symbols(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
-                        print(f"❌ {tf} taraması sırasında hata: {e}")                
+                        print(f"❌ {tf} taraması sırasında hata: {e}")  
+
+        if now.minute == 59:
+            if f"{current_key}" not in already_run:
+                already_run.add(f"{current_key}")
+                for tf in ["1h"]:
+                    try:
+                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                    except Exception as e:
+                        print(f"❌ {tf} taraması sırasında hata: {e}")      
+
+        if (now.minute == 58) and (now.hour == 2 or now.hour == 6 or now.hour == 10 or now.hour == 14 or now.hour == 18 or now.hour == 22):
+            if f"{current_key}" not in already_run:
+                already_run.add(f"{current_key}")
+                for tf in ["4h"]:
+                    try:
+                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                    except Exception as e:
+                        print(f"❌ {tf} taraması sırasında hata: {e}")                  
+
+        if now.minute == 58 and now.hour == 2:
+            if f"{current_key}" not in already_run:
+                already_run.add(f"{current_key}")
+                for tf in ["1d"]:
+                    try:
+                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                    except Exception as e:
+                        print(f"❌ {tf} taraması sırasında hata: {e}")                                  
         
         time.sleep(30)
 
