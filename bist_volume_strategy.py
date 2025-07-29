@@ -144,7 +144,7 @@ def scheduler_loop():
         now = datetime.datetime.now(datetime.timezone.utc)
 
         # Günlük mum için yeni mum zamanı 17:55 UTC kontrolü
-        if now.hour == 14 and now.minute == 30:
+        if now.hour == 14 and now.minute == 45:
             worker()
 
         time.sleep(30)
