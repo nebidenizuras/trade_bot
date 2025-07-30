@@ -135,7 +135,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")      
 
-        if (now.minute == 57) and (now.hour == 0 or now.hour == 4 or now.hour == 8 or now.hour == 12 or now.hour == 16 or now.hour == 20):
+        if (now.minute == 57) and (now.hour == 23 or now.hour == 3 or now.hour == 7 or now.hour == 11 or now.hour == 15 or now.hour == 19):
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
                 for tf in ["4h"]:
@@ -144,7 +144,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")                  
 
-        if now.minute == 56 and now.hour == 0:
+        if now.minute == 56 and now.hour == 23:
             if f"{current_key}" not in already_run:
                 already_run.add(f"{current_key}")
                 for tf in ["1d"]:
