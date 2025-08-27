@@ -18,7 +18,7 @@ VOLUME_RATIO = 1.1
 
 # Hangi zaman diliminde kaç mum alınacak
 TIMEFRAME_CONFIG = {
-    #"15m": 20,
+    "15m": 20,
     "1h": 20,
     "4h": 20,
     "1d": 20,
@@ -26,7 +26,7 @@ TIMEFRAME_CONFIG = {
 
 # Telegram kanal ID'leri
 channel_by_timeframe = {
-    #"15m": channel_03,
+    "15m": channel_03,
     "1h": channel_02,
     "4h": channel_01,
     "1d": channel_00,
@@ -80,9 +80,27 @@ def is_volume_increasing_by_percent(df):
         (close_3 > ema8_3)  # EMA 8 üzerinde kapanış
     )
 
+def is_breaking_above_ema8_with_volume(df):
+    if len(df) < 8:
+        return False
+
+    close_prev = df["close"].iloc[-2]   # önceki kapanış
+    ema8_prev = df["ema8"].iloc[-2]     # önceki EMA8
+    close_last = df["close"].iloc[-1]   # son kapanış
+    ema8_last = df["ema8"].iloc[-1]     # son EMA8
+
+    vol_prev = df["volume"].iloc[-2]    # önceki mum hacmi
+    vol_last = df["volume"].iloc[-1]    # son mum hacmi
+
+    return (
+        close_prev <= ema8_prev          # önce EMA8 altında kapanmış
+        and close_last > ema8_last       # şimdi EMA8 üstünde kapanmış (kırılım)
+        and vol_last > vol_prev * VOLUME_RATIO  # hacim artışı var
+    )
+
 def process_symbol(symbol, timeframe, candle_count):
     df = get_last_ohlcv(symbol, timeframe, candle_count)
-    if df is not None and is_volume_increasing_by_percent(df):
+    if df is not None and is_breaking_above_ema8_with_volume(df):
         last_volume = df["volume"].iloc[-1]
         last_close = df["close"].iloc[-1]
         volume_value = last_volume * last_close
@@ -116,8 +134,8 @@ def send_results(result_list, timeframe):
 
     #formatted = "\n".join([f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
     formatted = "\n".join([
-        f"[{item['symbol']}](https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P) "
-        f"(Volume: {item['volume_value']:,.2f} $)"
+        f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)\n"
+        f"https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P\n"
         for item in result_list
     ])
     msg = f"***\nTime Frame: {timeframe.upper()}\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
@@ -133,8 +151,7 @@ def scheduler_loop():
     while True:
         now = datetime.now(timezone.utc)
         current_key = now.strftime("%Y-%m-%d %H:%M")
-
-        '''
+        
         if now.minute in [14, 29, 44, 59]:
             if current_key not in already_run:
                 already_run.add(current_key)
@@ -142,8 +159,7 @@ def scheduler_loop():
                     try:
                         scan_symbols(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
-                        print(f"❌ {tf} taraması sırasında hata: {e}")  
-        '''
+                        print(f"❌ {tf} taraması sırasında hata: {e}")         
 
         if now.minute == 58:
             if current_key not in already_run:
@@ -180,8 +196,7 @@ if __name__ == "__main__":
         send_message_to_telegram(channel, f"🔔 TMT CRYPTO Strategy `{tf}` zaman dilimi için başlatıldı.")
 
     # İlk çalıştırmada tüm timeframe'leri tarat
-    #for tf in ["15m", "1h", "4h", "1d"]:
-    for tf in ["1h", "4h", "1d"]:
+    for tf in ["15m", "1h", "4h", "1d"]:
         try:
             scan_symbols(tf, TIMEFRAME_CONFIG[tf])
         except Exception as e:

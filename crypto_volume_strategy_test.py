@@ -1,5 +1,5 @@
 from binance.client import Client
-from telegram_bot import send_message_to_telegram, channel_00, channel_01, channel_02, channel_03
+from telegram_bot import send_message_to_telegram, channel_06
 import pandas as pd
 import time
 from datetime import datetime, timezone
@@ -24,8 +24,8 @@ TIMEFRAME_CONFIG = {
 
 # Telegram kanal ID'leri
 channel_by_timeframe = {
-    "4h": channel_03,
-    "1d": channel_03
+    "4h": channel_06,
+    "1d": channel_06
 }
 
 def get_usdt_symbols():
@@ -82,16 +82,18 @@ def is_breaking_above_ema8_with_volume(df):
 
     close_prev = df["close"].iloc[-2]   # önceki kapanış
     ema8_prev = df["ema8"].iloc[-2]     # önceki EMA8
-    close_last = df["close"].iloc[-1]   # son kapanış
-    ema8_last = df["ema8"].iloc[-1]     # son EMA8
-
     vol_prev = df["volume"].iloc[-2]    # önceki mum hacmi
+
+    close_last = df["close"].iloc[-1]   # son kapanış
+    open_last = df["open"].iloc[-1]     # son açılış
+    ema8_last = df["ema8"].iloc[-1]     # son EMA8    
     vol_last = df["volume"].iloc[-1]    # son mum hacmi
 
     return (
         close_prev <= ema8_prev          # önce EMA8 altında kapanmış
         and close_last > ema8_last       # şimdi EMA8 üstünde kapanmış (kırılım)
         and vol_last > vol_prev * VOLUME_RATIO  # hacim artışı var
+        and close_last > open_last
     )
 
 def process_symbol(symbol, timeframe, candle_count):
@@ -130,10 +132,11 @@ def send_results(result_list, timeframe):
 
     #formatted = "\n".join([f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
     formatted = "\n".join([
-        f"[{item['symbol']}](https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P) "
-        f"(Volume: {item['volume_value']:,.2f} $)"
+        f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)\n"
+        f"https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P\n"
         for item in result_list
     ])
+    
     msg = f"***\nTime Frame: {timeframe.upper()}\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
 
     print(msg)
