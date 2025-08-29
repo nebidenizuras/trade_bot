@@ -61,56 +61,40 @@ def get_last_ohlcv(symbol, timeframe, candle_count):
         print(f"[{timeframe}] Hata: {symbol} - {e}")
         return None
 
-def is_volume_increasing_by_percent(df):
-    if len(df) < 8:
-        return False
-
-    vol_2 = df["volume"].iloc[-2]
-    close_2 = df["close"].iloc[-2]
-    vol_3 = df["volume"].iloc[-1]
-    close_3 = df["close"].iloc[-1]
-    open_3 = df["open"].iloc[-1]
-    ema8_3 = df["ema8"].iloc[-1]
-
-    # Hacim + fiyat + EMA kontrolü
-    return (
-        (vol_3 > (vol_2 * VOLUME_RATIO)) and
-        (close_3 > close_2) and
-        (close_3 > open_3) and
-        (close_3 > ema8_3)  # EMA 8 üzerinde kapanış
-    )
-
-def is_breaking_above_ema8_with_volume(df):
+# ================== LONG TARAFI ==================
+def is_long_signal(df):
     if len(df) < 8:
         return False
 
     close_prev = df["close"].iloc[-2]   # önceki kapanış
     ema8_prev = df["ema8"].iloc[-2]     # önceki EMA8
-    close_last = df["close"].iloc[-1]   # son kapanış
-    ema8_last = df["ema8"].iloc[-1]     # son EMA8
-
     vol_prev = df["volume"].iloc[-2]    # önceki mum hacmi
+
+    close_last = df["close"].iloc[-1]   # son kapanış
+    open_last = df["open"].iloc[-1]     # son açılış
+    ema8_last = df["ema8"].iloc[-1]     # son EMA8    
     vol_last = df["volume"].iloc[-1]    # son mum hacmi
 
     return (
-        close_prev <= ema8_prev          # önce EMA8 altında kapanmış
-        and close_last > ema8_last       # şimdi EMA8 üstünde kapanmış (kırılım)
-        and vol_last > vol_prev * VOLUME_RATIO  # hacim artışı var
+        close_prev <= ema8_prev
+        and close_last > ema8_last
+        and vol_last > vol_prev * VOLUME_RATIO
+        and close_last > open_last
     )
 
 def process_symbol(symbol, timeframe, candle_count):
     df = get_last_ohlcv(symbol, timeframe, candle_count)
-    if df is not None and is_breaking_above_ema8_with_volume(df):
+    if df is not None and is_long_signal(df):
         last_volume = df["volume"].iloc[-1]
         last_close = df["close"].iloc[-1]
         volume_value = last_volume * last_close
         return {"symbol": symbol, "volume_value": volume_value}
     return None
 
-def scan_symbols(timeframe, candle_count):
+def scan_symbols_long(timeframe, candle_count):
     symbols = get_usdt_symbols()
     results = []
-    print(f"🔍 [{timeframe}] taraması başlatıldı. Toplam {len(symbols)} sembol kontrol edilecek...")
+    print(f"🔍 [{timeframe}] \U0001F7E2 LONG taraması başlatıldı. Toplam {len(symbols)} sembol kontrol edilecek...")
 
     with ThreadPoolExecutor(max_workers=30) as executor:
         futures = [executor.submit(process_symbol, symbol, timeframe, candle_count) for symbol in symbols]
@@ -126,24 +110,90 @@ def send_results(result_list, timeframe):
     channel_id = channel_by_timeframe.get(timeframe)
 
     if not result_list:
-        msg = f"***\n{timeframe.upper()} taramasında uygun coin bulunamadı.\n***"
+        msg = f"***\n{timeframe.upper()} \U0001F7E2 LONG taramasında uygun coin bulunamadı.\n***"
         if channel_id:
             send_message_to_telegram(channel_id, msg)
         print(msg)
         return
 
-    #formatted = "\n".join([f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)" for item in result_list])
     formatted = "\n".join([
-        f"{item['symbol']} (Volume: {item['volume_value']:,.2f} $)\n"
+        f"\U0001F7E2 {item['symbol']} (Volume: {item['volume_value']:,.2f} $)\n"
         f"https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P\n"
         for item in result_list
     ])
-    msg = f"***\nTime Frame: {timeframe.upper()}\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
+    msg = f"***\nTime Frame: {timeframe.upper()} \U0001F7E2 LONG\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
 
     print(msg)
     if IS_TELEGRAM_MSG_ACTIVE and channel_id:
         send_message_to_telegram(channel_id, msg)
 
+# ================== SHORT TARAFI ==================
+def is_short_signal(df):
+    if len(df) < 8:
+        return False
+
+    close_prev = df["close"].iloc[-2]   # önceki kapanış
+    ema8_prev = df["ema8"].iloc[-2]     # önceki EMA8
+    vol_prev = df["volume"].iloc[-2]    # önceki mum hacmi
+
+    close_last = df["close"].iloc[-1]   # son kapanış
+    open_last = df["open"].iloc[-1]     # son açılış
+    ema8_last = df["ema8"].iloc[-1]     # son EMA8    
+    vol_last = df["volume"].iloc[-1]    # son mum hacmi
+
+    return (
+        close_prev >= ema8_prev
+        and close_last < ema8_last
+        and vol_last > vol_prev * VOLUME_RATIO
+        and close_last < open_last
+    )
+
+def process_symbol_short(symbol, timeframe, candle_count):
+    df = get_last_ohlcv(symbol, timeframe, candle_count)
+    if df is not None and is_short_signal(df):
+        last_volume = df["volume"].iloc[-1]
+        last_close = df["close"].iloc[-1]
+        volume_value = last_volume * last_close
+        return {"symbol": symbol, "volume_value": volume_value}
+    return None
+
+def scan_symbols_short(timeframe, candle_count):
+    symbols = get_usdt_symbols()
+    results = []
+    print(f"[{timeframe}] \U0001F534 SHORT taraması başlatıldı. Toplam {len(symbols)} sembol kontrol edilecek...")
+
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        futures = [executor.submit(process_symbol_short, symbol, timeframe, candle_count) for symbol in symbols]
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                results.append(result)
+
+    sorted_results = sorted(results, key=lambda x: x["volume_value"], reverse=True)
+    send_results_short(sorted_results[:20], timeframe)
+
+def send_results_short(result_list, timeframe):
+    channel_id = channel_by_timeframe.get(timeframe)
+
+    if not result_list:
+        msg = f"***\n{timeframe.upper()} \U0001F534 SHORT taramasında uygun coin bulunamadı.\n***"
+        if channel_id:
+            send_message_to_telegram(channel_id, msg)
+        print(msg)
+        return
+
+    formatted = "\n".join([
+        f"\U0001F534 {item['symbol']} (Volume: {item['volume_value']:,.2f} $)\n"
+        f"https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P\n"
+        for item in result_list
+    ])
+    msg = f"***\nTime Frame: {timeframe.upper()} \U0001F534 SHORT\n***\n\n*** SONUÇLAR ***\n\n{formatted}"
+
+    print(msg)
+    if IS_TELEGRAM_MSG_ACTIVE and channel_id:
+        send_message_to_telegram(channel_id, msg)
+
+# ================== ZAMANLAYICI ==================
 def scheduler_loop():
     print("🔁 Zamanlayıcı başlatıldı...")
     already_run = set()
@@ -157,7 +207,8 @@ def scheduler_loop():
                 already_run.add(current_key)
                 for tf in ["15m"]:
                     try:
-                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")         
 
@@ -166,7 +217,8 @@ def scheduler_loop():
                 already_run.add(current_key)
                 for tf in ["1h"]:
                     try:
-                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")      
 
@@ -175,7 +227,8 @@ def scheduler_loop():
                 already_run.add(current_key)
                 for tf in ["4h"]:
                     try:
-                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")                  
 
@@ -184,21 +237,24 @@ def scheduler_loop():
                 already_run.add(current_key)
                 for tf in ["1d"]:
                     try:
-                        scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+                        scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")                                  
-        
+    
         time.sleep(30)
 
+# ================== MAIN ==================
 if __name__ == "__main__":
     # Başlangıç mesajı
     for tf, channel in channel_by_timeframe.items():
-        send_message_to_telegram(channel, f"🔔 TMT CRYPTO Strategy `{tf}` zaman dilimi için başlatıldı.")
+        send_message_to_telegram(channel, f"🔔 TMT CRYPTO Strategy `{tf}` zaman dilimi için başlatıldı. (LONG & SHORT)")
 
     # İlk çalıştırmada tüm timeframe'leri tarat
     for tf in ["15m", "1h", "4h", "1d"]:
         try:
-            scan_symbols(tf, TIMEFRAME_CONFIG[tf])
+            scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+            scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
         except Exception as e:
             print(f"❌ İlk taramada hata: {tf} - {e}")
 
