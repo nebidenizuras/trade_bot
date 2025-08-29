@@ -7,7 +7,7 @@ from telegram_bot import send_message_to_telegram, channel_05  # ABD için farkl
 US_SYMBOLS = [
     'A', 'AAL', 'AAP', 'AAPL', 'ABBV', 'ABT', 'ACN', 'ADBE', 'ADI', 'ADM', 'ADP', 'ADSK', 'AEE', 'AEP', 'AES', 'AFL',
     'AIG', 'AIZ', 'AJG', 'AKAM', 'ALB', 'ALGN', 'ALL', 'ALLE', 'AMAT', 'AMD', 'AME', 'AMGN', 'AMP', 'AMT', 'AMZN',
-    'ANET', 'ANSS', 'AON', 'APA', 'APD', 'APH', 'ARE', 'ATO', 'AVB', 'AVGO', 'AVY', 'AWK', 'AXON', 'AXP', 'AZO',
+    'ANET', 'AON', 'APA', 'APD', 'APH', 'ARE', 'ATO', 'AVB', 'AVGO', 'AVY', 'AWK', 'AXON', 'AXP', 'AZO',
     'BA', 'BAC', 'BALL', 'BAX', 'BBWI', 'BBY', 'BDX', 'BEN', 'BIO', 'BIIB', 'BK', 'BKNG', 'BKR', 'BLDR', 'BMY',
     'BR', 'BRO', 'BSX', 'BWA', 'BX', 'C', 'CACC', 'CAG', 'CAH', 'CARR', 'CAT', 'CB', 'CBOE', 'CBRE', 'CCI', 'CCL',
     'CDNS', 'CDW', 'CE', 'CF', 'CHD', 'CHRW', 'CHTR', 'CI', 'CINF', 'CL', 'CLX', 'CMA', 'CMCSA', 'CME',
@@ -18,10 +18,10 @@ US_SYMBOLS = [
     'EQT', 'ES', 'ESS', 'ETN', 'ETR', 'ETSY', 'EVRG', 'EW', 'EXC', 'EXPD', 'EXPE', 'EXR', 'F', 'FAST', 'FCX',
     'FDS', 'FDX', 'FE', 'FFIV', 'FI', 'FICO', 'FIS', 'FITB', 'FL', 'FLEX', 'FLR', 'FLS', 'FMC', 'FOXA',
     'FOXF', 'FSLR', 'FTNT', 'FTV', 'GD', 'GE', 'GEN', 'GILD', 'GIS', 'GL', 'GLW', 'GM', 'GNRC', 'GOOG',
-    'GOOGL', 'GPC', 'GPN', 'GRMN', 'GS', 'GWW', 'HAL', 'HAS', 'HBAN', 'HCA', 'HD', 'HES', 'HIG', 'HII', 'HLT',
+    'GOOGL', 'GPC', 'GPN', 'GRMN', 'GS', 'GWW', 'HAL', 'HAS', 'HBAN', 'HCA', 'HD', 'HIG', 'HII', 'HLT',
     'HOLX', 'HON', 'HPE', 'HPQ', 'HRL', 'HSIC', 'HST', 'HSY', 'HUBB', 'HUM', 'HWM', 'IBM', 'ICE', 'IDXX', 'ILMN',
     'INCY', 'INTC', 'INTU', 'IP', 'IPG', 'IQV', 'IR', 'IRM', 'ISRG', 'IT', 'ITW', 'IVZ', 'J', 'JBHT', 'JCI', 'JKHY',
-    'JNJ', 'JNPR', 'JPM', 'K', 'KEY', 'KEYS', 'KHC', 'KIM', 'KLAC', 'KMB', 'KMI', 'KO', 'KR', 'L', 'LDOS',
+    'JNJ', 'JPM', 'K', 'KEY', 'KEYS', 'KHC', 'KIM', 'KLAC', 'KMB', 'KMI', 'KO', 'KR', 'L', 'LDOS',
     'LEN', 'LH', 'LHX', 'LIN', 'LKQ', 'LLY', 'LMT', 'LNC', 'LNT', 'LOW', 'LRCX', 'LUMN', 'LUV', 'LVS', 'LW',
     'LYB', 'LYV', 'MA', 'MAA', 'MAR', 'MAS', 'MCD', 'MCHP', 'MCK', 'MCO', 'MDLZ', 'MDT', 'MET', 'META', 'MGM',
     'MHK', 'MKC', 'MKTX', 'MLM', 'MMC', 'MMM', 'MNST', 'MO', 'MOS', 'MPC', 'MPWR', 'MRK', 'MRNA', 'MRVL',
@@ -50,31 +50,43 @@ INTERVAL = "1d"
 # Telegram kanal
 CHANNEL = channel_05
 
-def is_volume_increasing(df):
-    if len(df) < 3:
+def is_long_signal(df):
+    if len(df) < 8:  # EMA8 için en az 8 mum
         return False
 
-    # MultiIndex kolon varsa düzleştir
+    # MultiIndex kolon varsa düzelt
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
-    vol_2 = df['Volume'].iloc[-2]
-    close_2 = df['Close'].iloc[-2]
-    vol_3 = df['Volume'].iloc[-1]
-    close_3 = df['Close'].iloc[-1]
-    open_3 = df["Open"].iloc[-1]
+    # EMA8 hesapla
+    df["ema8"] = df["Close"].ewm(span=8, adjust=False).mean()
 
-    return (vol_3 > vol_2 * VOLUME_RATIO) and (close_3 > close_2) and (close_3 > open_3)
+    # Hacim ve fiyat kontrolleri
+    vol_prev = df['Volume'].iloc[-2]
+    close_prev = df['Close'].iloc[-2]
+    ema8_prev = df['ema8'].iloc[-2]
+
+    vol_last = df['Volume'].iloc[-1]
+    close_last = df['Close'].iloc[-1]
+    open_last = df['Open'].iloc[-1]
+    ema8_last = df['ema8'].iloc[-1]
+
+    return (
+        close_prev <= ema8_prev
+        and close_last > ema8_last
+        and vol_last > vol_prev * VOLUME_RATIO
+        and close_last > open_last
+    )
 
 def scan_symbols():
     results = []
     for symbol in US_SYMBOLS:
         try:
-            df = yf.download(symbol, period="7d", interval=INTERVAL, progress=False, auto_adjust=False)
+            df = yf.download(symbol, period="1mo", interval=INTERVAL, progress=False, auto_adjust=False)
             if df is not None and not df.empty:
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.get_level_values(0)
-                if is_volume_increasing(df):
+                if is_long_signal(df):
                     vol = df['Volume'].iloc[-1]
                     close = df['Close'].iloc[-1]
                     value = vol * close

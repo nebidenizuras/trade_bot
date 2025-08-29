@@ -10,7 +10,7 @@ BIST_SYMBOLS = [
         "A1CAP.IS","ACSEL.IS","ADEL.IS","ADESE.IS","ADGYO.IS","AEFES.IS","AFYON.IS","AGESA.IS","AGHOL.IS","AGROT.IS",
         "AHGAZ.IS","AHSGY.IS","AKBNK.IS","AKCNS.IS","AKENR.IS","AKFGY.IS","AKFYE.IS","AKGRT.IS","AKSA.IS","AKSEN.IS",
         "AKSUE.IS","AKYHO.IS","ALARK.IS","ALBRK.IS","ALCAR.IS","ALCTL.IS","ALFAS.IS","ALKA.IS","ALKIM.IS","ALKLC.IS",
-        "ALMAD.IS","ALTNY.IS","ALVES.IS","ANELE.IS","ANGEN.IS","ANHYT.IS","ANSGR.IS","ARASE.IS","ARCLK.IS",
+        "ALTNY.IS","ALVES.IS","ANELE.IS","ANGEN.IS","ANHYT.IS","ANSGR.IS","ARASE.IS","ARCLK.IS",
         "ARDYZ.IS","ARSAN.IS","ARTMS.IS","ARZUM.IS","ASELS.IS","ASTOR.IS","ASUZU.IS","ATAKP.IS","ATATP.IS","ATEKS.IS",
         "ATLAS.IS","ATSYH.IS","AVGYO.IS","AVHOL.IS","AVOD.IS","AVPGY.IS","AYDEM.IS","AYEN.IS","AYES.IS","AYGAZ.IS",
         "BAGFS.IS","BAHKM.IS","BAKAB.IS","BALAT.IS","BANVT.IS","BARMA.IS","BASCM.IS","BASGZ.IS","BAYRK.IS","BEGYO.IS",
@@ -33,7 +33,7 @@ BIST_SYMBOLS = [
         "IHLGM.IS","IHYAY.IS","IMASM.IS","INFO.IS","INTEK.IS","INVEO.IS","INVES.IS","IPEKE.IS","ISATR.IS","ISBIR.IS",
         "ISBTR.IS","ISCTR.IS","ISDMR.IS","ISFIN.IS","ISGSY.IS","ISGYO.IS","ISKPL.IS","ISKUR.IS","ISMEN.IS","ISSEN.IS",
         "IZENR.IS","IZFAS.IS","IZINV.IS","IZMDC.IS","JANTS.IS","KAPLM.IS","KAREL.IS","KARSN.IS","KARTN.IS",
-        "KATMR.IS","KAYSE.IS","KBORU.IS","KCAER.IS","KCHOL.IS","KENT.IS","KERVN.IS","KERVT.IS","KFEIN.IS","KLKIM.IS",
+        "KATMR.IS","KAYSE.IS","KBORU.IS","KCAER.IS","KCHOL.IS","KENT.IS","KERVN.IS","KFEIN.IS","KLKIM.IS",
         "KLMSN.IS","KLNMA.IS","KLRHO.IS","KLSER.IS","KLSYN.IS","KMPUR.IS","KNFRT.IS","KOCMT.IS","KONKA.IS","KONTR.IS",
         "KONYA.IS","KOPOL.IS","KORDS.IS","KOTON.IS","KOZAA.IS","KOZAL.IS","KRDMA.IS","KRDMB.IS","KRDMD.IS","KRONT.IS",
         "KRPLS.IS","KRSTL.IS","KRTEK.IS","KRVGD.IS","KTLEV.IS","KTSKR.IS","KUTPO.IS","KUVVA.IS","KZBGY.IS","KZGYO.IS",
@@ -74,32 +74,44 @@ INTERVAL = "1d"
 # Telegram kanal (örnek)
 CHANNEL = channel_04
 
-def is_volume_increasing(df):
-    if len(df) < 3:
+def is_long_signal(df):
+    if len(df) < 8:  # EMA8 için en az 8 mum
         return False
 
-    # MultiIndex kolon varsa indir
+    # MultiIndex kolon varsa düzelt
     if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(1)
+        df.columns = df.columns.get_level_values(0)
 
-    vol_2 = df['Volume'].iloc[-2]    
-    close_2 = df['Close'].iloc[-2]
-    vol_3 = df['Volume'].iloc[-1]
-    close_3 = df['Close'].iloc[-1]
-    open_3 = df["Open"].iloc[-1]
+    # EMA8 hesapla
+    df["ema8"] = df["Close"].ewm(span=8, adjust=False).mean()
 
-    return (vol_3 > vol_2 * VOLUME_RATIO) and (close_3 > close_2) and (close_3 > open_3)
+    # Hacim ve fiyat kontrolleri
+    vol_prev = df['Volume'].iloc[-2]
+    close_prev = df['Close'].iloc[-2]
+    ema8_prev = df['ema8'].iloc[-2]
+
+    vol_last = df['Volume'].iloc[-1]
+    close_last = df['Close'].iloc[-1]
+    open_last = df['Open'].iloc[-1]
+    ema8_last = df['ema8'].iloc[-1]
+
+    return (
+        close_prev <= ema8_prev
+        and close_last > ema8_last
+        and vol_last > vol_prev * VOLUME_RATIO
+        and close_last > open_last
+    )
 
 def scan_symbols():
     results = []
     for symbol in BIST_SYMBOLS:
         try:
-            df = yf.download(symbol, period="7d", interval=INTERVAL, progress=False, auto_adjust=False)
+            df = yf.download(symbol, period="1mo", interval=INTERVAL, progress=False, auto_adjust=False)
             if df is not None and not df.empty:
                 # MultiIndex kolonları indir
                 if isinstance(df.columns, pd.MultiIndex):
                     df.columns = df.columns.get_level_values(0)
-                if is_volume_increasing(df):
+                if is_long_signal(df):
                     vol = df['Volume'].iloc[-1]
                     close = df['Close'].iloc[-1]
                     value = vol * close
@@ -129,9 +141,12 @@ def worker():
     results = scan_symbols()
 
     if results:
-        message = "*** 1d sonuçları ***\n\n"
+        message = ""
         for item in results:
-            message += f"{item['symbol']} - İşlem Hacmi: {item['volume_value']:,.2f} TRY\n"
+            #message += f"{item['symbol']} - Hacim: {item['volume_value']:,.2f} TRY\n"
+            symbol_tradingview = item['symbol'].replace(".IS","")
+            message += f"{item['symbol'].replace(".IS","")} - İşlem Hacmi: {item['volume_value']:,.2f} TRY\n"
+            message += f"https://tr.tradingview.com/chart/?symbol=BIST:{symbol_tradingview}\n\n"
     else:
         message = "1d tarama kriterine uyan hisse bulunamadı."
 
