@@ -60,7 +60,7 @@ def get_last_ohlcv(symbol, timeframe, candle_count):
         return None
 
 # ================== PUANLAMA ==================
-def get_score(df, signal_type="long"):
+def get_score(df, timeframe, signal_type="long"):
     if len(df) < 8:
         return 0
 
@@ -81,6 +81,14 @@ def get_score(df, signal_type="long"):
     open_3 = df["open"].iloc[-3]
     vol_3 = df["volume"].iloc[-3]
     ema8_3 = df["ema8"].iloc[-3] 
+
+    if timeframe == "1h":
+        if (close_1 * vol_1 < 9000000):
+                return 0
+            
+    if timeframe == "15m":
+        if (close_1 * vol_1 < 2500000):
+                return 0
 
     if signal_type == "long":
         if close_1 > ema8_1:
@@ -126,7 +134,7 @@ def process_and_scan(symbols, timeframe, candle_count, signal_type="long"):
     def process_symbol_inner(symbol):
         df = get_last_ohlcv(symbol, timeframe, candle_count)
         if df is not None:
-            score = get_score(df, signal_type)
+            score = get_score(df, timeframe, signal_type)
             if score > 0:
                 last_volume = df["volume"].iloc[-1]
                 last_close = df["close"].iloc[-1]
