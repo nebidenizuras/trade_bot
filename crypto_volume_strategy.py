@@ -96,7 +96,7 @@ def scan_symbols_long(timeframe, candle_count):
     results = []
     print(f"🔍 [{timeframe}] \U0001F7E2 LONG taraması başlatıldı. Toplam {len(symbols)} sembol kontrol edilecek...")
 
-    with ThreadPoolExecutor(max_workers=30) as executor:
+    with ThreadPoolExecutor(max_workers=15) as executor:
         futures = [executor.submit(process_symbol, symbol, timeframe, candle_count) for symbol in symbols]
         for future in as_completed(futures):
             result = future.result()
@@ -254,7 +254,9 @@ if __name__ == "__main__":
     for tf in ["15m", "1h", "4h", "1d"]:
         try:
             scan_symbols_long(tf, TIMEFRAME_CONFIG[tf])
+            time.sleep(2)
             scan_symbols_short(tf, TIMEFRAME_CONFIG[tf])
+            time.sleep(5)
         except Exception as e:
             print(f"❌ İlk taramada hata: {tf} - {e}")
 

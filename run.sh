@@ -7,4 +7,5 @@ source venv/bin/activate
 nohup python crypto_volume_strategy.py > crypto_output.log 2>&1 &
 nohup python bist_volume_strategy.py > bist_output.log 2>&1 &
 nohup python usstock_volume_strategy.py > usstock_output.log 2>&1 &
+sleep 60
 nohup python crypto_volume_strategy_test.py > crypto2_output.log 2>&1 &
