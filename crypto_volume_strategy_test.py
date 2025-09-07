@@ -109,6 +109,8 @@ def get_score(df, timeframe, signal_type="long"):
             score += 1
         if (((close_1 - open_1) / open_1) * 100) > 3:
             score += 3
+        if (((close_1 - open_1) / open_1) * 100) < 0.75:
+            return 0
         
     else:  # short
         if close_1 < ema8_1:
@@ -129,6 +131,8 @@ def get_score(df, timeframe, signal_type="long"):
             score += 1
         if (((open_1 - close_1) / open_1) * 100) > 3:
             score += 3
+        if (((open_1 - close_1) / open_1) * 100) < 0.75:
+            return 0        
 
     return score
 
