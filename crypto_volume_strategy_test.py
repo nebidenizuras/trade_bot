@@ -107,6 +107,9 @@ def get_score(df, timeframe, signal_type="long"):
             score += 1
         if close_3 < ema8_3:
             score += 1
+        if (((close_1 - open_1) / open_1) * 100) > 3:
+            score += 3
+        
     else:  # short
         if close_1 < ema8_1:
             score += 1
@@ -124,6 +127,8 @@ def get_score(df, timeframe, signal_type="long"):
             score += 1
         if close_3 > ema8_3:
             score += 1
+        if (((open_1 - close_1) / open_1) * 100) > 3:
+            score += 3
 
     return score
 
@@ -138,8 +143,10 @@ def process_and_scan(symbols, timeframe, candle_count, signal_type="long"):
             if score > 0:
                 last_volume = df["volume"].iloc[-1]
                 last_close = df["close"].iloc[-1]
+                last_open = df["open"].iloc[-1]
+                last_ratio = ((abs(last_open - last_close) / last_open) * 100)
                 volume_value = last_volume * last_close
-                return {"symbol": symbol, "score": score, "volume_value": volume_value}
+                return {"symbol": symbol, "score": score, "volume_value": volume_value, "ratio": last_ratio}
         return None
 
     with ThreadPoolExecutor(max_workers=15) as executor:
@@ -165,7 +172,7 @@ def send_results_generic(result_list, timeframe, signal_type="long"):
         return
 
     formatted = "\n".join([
-        f"{symbol_type} {item['symbol']} | Score: {item['score']} (Volume: {item['volume_value']:,.2f} $)\n"
+        f"{symbol_type} {item['symbol']} | Score: {item['score']} (Volume: {item['volume_value']:,.2f} $) (% {item['ratio']:,.2f})\n"
         f"https://tr.tradingview.com/chart/?symbol=BINANCE:{item['symbol']}.P\n"
         for item in result_list
     ])
