@@ -132,6 +132,21 @@ def get_score(df, timeframe, signal_type="long"):
 
     return score
 
+def get_ratio(df, signal_type="long"):
+    if len(df) < 8:
+        return 0
+
+    # son mum
+    close_1 = df["close"].iloc[-1]
+    open_1 = df["open"].iloc[-1]
+
+    if signal_type == "long":
+        return (((close_1 - open_1) / open_1) * 100)
+        
+    else:  # short
+        return (((open_1 - close_1) / open_1) * 100)
+
+
 # ================== TEK TARAMA FONKSİYONU ==================
 def process_and_scan(symbols, timeframe, candle_count, signal_type="long"):
     results = []
@@ -143,8 +158,7 @@ def process_and_scan(symbols, timeframe, candle_count, signal_type="long"):
             if score > 0:
                 last_volume = df["volume"].iloc[-1]
                 last_close = df["close"].iloc[-1]
-                last_open = df["open"].iloc[-1]
-                last_ratio = ((abs(last_open - last_close) / last_open) * 100)
+                last_ratio = get_ratio(df, signal_type)
                 volume_value = last_volume * last_close
                 return {"symbol": symbol, "score": score, "volume_value": volume_value, "ratio": last_ratio}
         return None
@@ -241,7 +255,6 @@ if __name__ == "__main__":
     for tf, channel in channel_by_timeframe.items():
         send_message_to_telegram(channel, f"🔔 TMT CRYPTO Test Strategy `{tf}` zaman dilimi için başlatıldı. (LONG & SHORT)")
 
-    '''
     # İlk çalıştırmada tüm timeframe'leri tarat
     symbols = get_usdt_symbols()
     #for tf in ["15m", "1h", "4h", "1d"]:
@@ -253,6 +266,5 @@ if __name__ == "__main__":
             time.sleep(5)
         except Exception as e:
             print(f"❌ İlk taramada hata: {tf} - {e}")
-    '''
 
     scheduler_loop()
