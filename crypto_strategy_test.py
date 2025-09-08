@@ -259,8 +259,11 @@ if __name__ == "__main__":
     for tf, channel in channel_by_timeframe.items():
         send_message_to_telegram(channel, f"🔔 TMT CRYPTO Test Strategy `{tf}` zaman dilimi için başlatıldı. (LONG & SHORT)")
 
+    
     # İlk çalıştırmada tüm timeframe'leri tarat
     symbols = get_usdt_symbols()
+
+    '''
     #for tf in ["15m", "1h", "4h", "1d"]:
     for tf in ["15m", "1h"]:
         try:
@@ -272,3 +275,4 @@ if __name__ == "__main__":
             print(f"❌ İlk taramada hata: {tf} - {e}")
 
     scheduler_loop()
+    '''
