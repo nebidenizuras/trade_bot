@@ -129,5 +129,5 @@ def scheduler_loop():
         time.sleep(30)
 
 if __name__ == "__main__":    
-    send_message_to_telegram(CHANNEL, f"🔔 TMT USSTOCK Strategy 1d zaman dilimi için başlatıldı.")
+    send_message_to_telegram(CHANNEL, f"🔔 USSTOCK Strategy 1d zaman dilimi için başlatıldı.")
     scheduler_loop()

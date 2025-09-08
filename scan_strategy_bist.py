@@ -166,5 +166,5 @@ def scheduler_loop():
 
 if __name__ == "__main__":
     # Başlangıç mesajı
-    send_message_to_telegram(CHANNEL, f"🔔 TMT BIST Strategy 1d zaman dilimi için başlatıldı.")
+    send_message_to_telegram(CHANNEL, f"🔔 BIST Strategy 1d zaman dilimi için başlatıldı.")
     scheduler_loop()
