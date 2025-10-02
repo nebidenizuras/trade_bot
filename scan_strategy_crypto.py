@@ -207,8 +207,9 @@ def scheduler_loop():
 
     while True:
         now = datetime.now(timezone.utc)
-        current_key = now.strftime("%Y-%m-%d %H:%M")        
-        
+        current_key = now.strftime("%Y-%m-%d %H:%M")    
+
+        '''    
         if now.minute in [14, 29, 44, 59]:
             if current_key not in already_run:
                 already_run.add(current_key)
@@ -228,8 +229,9 @@ def scheduler_loop():
                         process_and_scan(symbols, tf, TIMEFRAME_CONFIG[tf], signal_type="short")
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")    
-        
-        if now.minute == 57 and now.hour in [23, 3, 7, 11, 15, 19]:
+        '''    
+
+        if now.minute == 59 and now.hour in [23, 3, 7, 11, 15, 19]:
             if current_key not in already_run:
                 already_run.add(current_key)
                 for tf in ["4h"]:
@@ -239,7 +241,7 @@ def scheduler_loop():
                     except Exception as e:
                         print(f"❌ {tf} taraması sırasında hata: {e}")                  
 
-        if now.minute == 56 and now.hour == 23:
+        if now.minute == 58 and now.hour == 23:
             if current_key not in already_run:
                 already_run.add(current_key)
                 for tf in ["1d"]:
@@ -259,7 +261,8 @@ if __name__ == "__main__":
 
     # İlk çalıştırmada tüm timeframe'leri tarat
     symbols = get_usdt_symbols()
-    for tf in ["15m", "1h", "4h", "1d"]:    
+    #for tf in ["15m", "1h", "4h", "1d"]:    
+    for tf in ["4h", "1d"]: 
         try:
             process_and_scan(symbols, tf, TIMEFRAME_CONFIG[tf], signal_type="long")
             time.sleep(10)
