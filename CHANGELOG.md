@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v1.2.0] - 2026-04-19
+
+### Değişiklikler (tradingview_indicator.pine)
+- EMA8 rengi turuncu → beyaz
+- plotshape okları kaldırıldı, sadece skor etiketleri (`▲ 7` / `▼ 5`) gösteriliyor
+- alertcondition mesajı const string yapıldı (Pine Script kısıtı)
+- plotshape ve label.new çok satırlı çağrılar tek satıra alındı (syntax fix)
+- longScore/shortScore hesabı ternary ifadeye çevrildi (syntax fix)
+- volumeFilterPassed if/else bloğu ternary operatöre çevrildi (syntax fix)
+- Pine Script dosyasına dahili versiyon geçmişi bloğu eklendi
+
+---
+
 ## [v1.1.0] - 2026-04-19
 
 ### Eklenenler

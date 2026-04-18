@@ -1,4 +1,14 @@
 //@version=5
+// ─── VERSİYON GEÇMİŞİ ────────────────────────────────────────────────────────
+// v1.0.6 | 2026-04-19 | EMA8 rengi turuncu'dan beyaza değiştirildi
+// v1.0.5 | 2026-04-19 | plotshape okları kaldırıldı, sadece label gösterimi kaldı
+// v1.0.4 | 2026-04-19 | alertcondition mesajı const string yapıldı (Pine Script kısıtı)
+// v1.0.3 | 2026-04-19 | plotshape ve label.new çok satırlı çağrılar tek satıra alındı
+// v1.0.2 | 2026-04-19 | longScore/shortScore if bloğu ternary ifadeye çevrildi
+// v1.0.1 | 2026-04-19 | volumeFilterPassed if/else bloğu ternary operatöre çevrildi
+// v1.0.0 | 2026-04-19 | İlk sürüm: EMA8 tabanlı long/short sinyali, skor sistemi,
+//                       hacim filtresi, ok ve etiket gösterimi, alert condition
+// ─────────────────────────────────────────────────────────────────────────────
 indicator("NDU Signal Scanner", overlay=true, max_labels_count=500)
 
 // ─── INPUTS ───────────────────────────────────────────────────────────────────
@@ -17,15 +27,10 @@ ema8 = ta.ema(close, 8)
 // ─── HACIM FİLTRESİ ───────────────────────────────────────────────────────────
 dollarVolume = close * volume
 
-volumeFilterPassed =
-  if not useVolFilter
-      true
-  else if timeframe.period == "15"
-      dollarVolume >= minVol15m
-  else if timeframe.period == "60"
-      dollarVolume >= minVol1h
-  else
-      true
+volumeFilterPassed = not useVolFilter ? true :
+  timeframe.period == "15"  ? dollarVolume >= minVol15m :
+  timeframe.period == "60"  ? dollarVolume >= minVol1h  :
+  true
 
 // ─── LONG SKORU ───────────────────────────────────────────────────────────────
 bodyPctLong = (close - open) / open * 100
@@ -36,21 +41,15 @@ longValid =
   bodyPctLong >= minBodyPct and
   volumeFilterPassed
 
-longScore = 0
-if longValid
-  longScore := 0
-  longScore += 1                                    // close > ema8
-  longScore += 1                                    // close > open (bullish candle)
-  if volume > volume[1] * volumeRatio
-      longScore += 1                                // hacim artışı (son mum)
-  if volume[1] > volume[2] * volumeRatio
-      longScore += 1                                // hacim artışı (önceki mum)
-  if close[1] < ema8[1]
-      longScore += 1                                // önceki mum EMA altındaydı
-  if close[2] < ema8[2]
-      longScore += 1                                // 2 mum önce EMA altındaydı
-  if bodyPctLong > bigBodyPct
-      longScore += 3                                // güçlü mum gövdesi bonus
+longScore = longValid ? (
+  1 +
+  1 +
+  (volume   > volume[1] * volumeRatio ? 1 : 0) +
+  (volume[1] > volume[2] * volumeRatio ? 1 : 0) +
+  (close[1] < ema8[1] ? 1 : 0) +
+  (close[2] < ema8[2] ? 1 : 0) +
+  (bodyPctLong > bigBodyPct ? 3 : 0)
+  ) : 0
 
 // ─── SHORT SKORU ──────────────────────────────────────────────────────────────
 bodyPctShort = (open - close) / open * 100
@@ -61,71 +60,31 @@ shortValid =
   bodyPctShort >= minBodyPct and
   volumeFilterPassed
 
-shortScore = 0
-if shortValid
-  shortScore := 0
-  shortScore += 1                                   // close < ema8
-  shortScore += 1                                   // close < open (bearish candle)
-  if volume > volume[1] * volumeRatio
-      shortScore += 1
-  if volume[1] > volume[2] * volumeRatio
-      shortScore += 1
-  if close[1] > ema8[1]
-      shortScore += 1
-  if close[2] > ema8[2]
-      shortScore += 1
-  if bodyPctShort > bigBodyPct
-      shortScore += 3
+shortScore = shortValid ? (
+  1 +
+  1 +
+  (volume    > volume[1] * volumeRatio ? 1 : 0) +
+  (volume[1] > volume[2] * volumeRatio ? 1 : 0) +
+  (close[1]  > ema8[1] ? 1 : 0) +
+  (close[2]  > ema8[2] ? 1 : 0) +
+  (bodyPctShort > bigBodyPct ? 3 : 0)
+  ) : 0
 
 // ─── SİNYAL KOŞULLARI ─────────────────────────────────────────────────────────
 longSignal  = longValid  and longScore  >= minScore
 shortSignal = shortValid and shortScore >= minScore
 
 // ─── EMA ÇİZGİSİ ──────────────────────────────────────────────────────────────
-plot(showEma ? ema8 : na, "EMA 8", color=color.new(color.orange, 0), linewidth=2)
+plot(showEma ? ema8 : na, "EMA 8", color=color.new(color.white, 0), linewidth=2)
 
 // ─── OKLAR ────────────────────────────────────────────────────────────────────
-plotshape(
-  longSignal,
-  title     = "Long Sinyal",
-  style     = shape.triangleup,
-  location  = location.belowbar,
-  color     = color.new(color.lime, 0),
-  size      = size.normal
-)
-
-plotshape(
-  shortSignal,
-  title     = "Short Sinyal",
-  style     = shape.triangledown,
-  location  = location.abovebar,
-  color     = color.new(color.red, 0),
-  size      = size.normal
-)
-
 // ─── SKOR ETİKETLERİ ──────────────────────────────────────────────────────────
 if longSignal
-  label.new(
-      x       = bar_index,
-      y       = low  * 0.998,
-      text    = "▲ " + str.tostring(longScore),
-      style   = label.style_label_up,
-      color   = color.new(color.lime, 10),
-      textcolor = color.black,
-      size    = size.small
-  )
+    label.new(bar_index, low  * 0.998, "▲ " + str.tostring(longScore),  style=label.style_label_up,   color=color.new(color.lime, 10), textcolor=color.black, size=size.small)
 
 if shortSignal
-  label.new(
-      x       = bar_index,
-      y       = high * 1.002,
-      text    = "▼ " + str.tostring(shortScore),
-      style   = label.style_label_down,
-      color   = color.new(color.red, 10),
-      textcolor = color.white,
-      size    = size.small
-  )
+    label.new(bar_index, high * 1.002, "▼ " + str.tostring(shortScore), style=label.style_label_down, color=color.new(color.red,  10), textcolor=color.white, size=size.small)
 
 // ─── ALERT KOŞULLARI ──────────────────────────────────────────────────────────
-alertcondition(longSignal,  "Long Sinyal",  "🟢 LONG | Skor: " + str.tostring(longScore))
-alertcondition(shortSignal, "Short Sinyal", "🔴 SHORT | Skor: " + str.tostring(shortScore))
+alertcondition(longSignal,  "Long Sinyal",  "🟢 LONG sinyali oluştu")
+alertcondition(shortSignal, "Short Sinyal", "🔴 SHORT sinyali oluştu")
