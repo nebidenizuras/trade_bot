@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v1.4.0] - 2026-04-19
+
+### Değişiklikler
+- `tradingview_indicator.pine` — ATR filtresi denendi, kaldırıldı, strateji ile senkronize edildi
+- `tradingview_strategy.pine` — ATR/ADX denemeleri geri alındı, v1.0.0'da sabit
+
+---
+
 ## [v1.3.0] - 2026-04-19
 
 ### Değişiklikler (tradingview_indicator.pine)

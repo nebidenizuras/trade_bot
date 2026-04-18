@@ -1,5 +1,6 @@
 //@version=5
 // ─── VERSİYON GEÇMİŞİ ────────────────────────────────────────────────────────
+// v1.0.9 | 2026-04-19 | ATR filtresi kaldırıldı, strateji ile senkronize edildi
 // v1.0.8 | 2026-04-19 | Ayrı trend çizgisi kaldırıldı, EMA8 trend rengine boyandı
 // v1.0.7 | 2026-04-19 | Trend çizgisi ve arka plan rengi eklendi (long=yeşil, short=kırmızı)
 // v1.0.6 | 2026-04-19 | EMA8 rengi turuncu'dan beyaza değiştirildi

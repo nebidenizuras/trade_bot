@@ -1,0 +1,102 @@
+//@version=5
+// ─── VERSİYON GEÇMİŞİ ────────────────────────────────────────────────────────
+// v1.0.0 | 2026-04-19 | İlk strateji sürümü: indikatör algoritmasından türetildi,
+//                       long/short girişleri, zıt sinyal ile çıkış, commission/slippage
+// ─────────────────────────────────────────────────────────────────────────────
+strategy("NDU Signal Strategy", overlay=true, max_labels_count=500,
+  default_qty_type=strategy.percent_of_equity, default_qty_value=100,
+  commission_type=strategy.commission.percent, commission_value=0.05,
+  slippage=2)
+
+// ─── INPUTS ───────────────────────────────────────────────────────────────────
+volumeRatio  = input.float(1.1,    "Hacim Artış Oranı",     step=0.05)
+minBodyPct   = input.float(0.75,   "Min Mum Gövdesi (%)",   step=0.05)
+bigBodyPct   = input.float(3.0,    "Büyük Gövde Eşiği (%)", step=0.1)
+useVolFilter = input.bool(true,    "Hacim Filtresi Uygula")
+minVol15m    = input.float(2500000,"Min Hacim - 15m ($)",   step=100000)
+minVol1h     = input.float(9000000,"Min Hacim - 1h ($)",    step=100000)
+showEma      = input.bool(true,    "EMA8 Göster")
+minScore     = input.int(2,        "Min Sinyal Skoru",       minval=1, maxval=9)
+tradeDir     = input.string("Her İkisi", "İşlem Yönü", options=["Long", "Short", "Her İkisi"])
+
+// ─── EMA8 ─────────────────────────────────────────────────────────────────────
+ema8 = ta.ema(close, 8)
+
+// ─── HACIM FİLTRESİ ───────────────────────────────────────────────────────────
+dollarVolume = close * volume
+
+volumeFilterPassed = not useVolFilter ? true :
+  timeframe.period == "15" ? dollarVolume >= minVol15m :
+  timeframe.period == "60" ? dollarVolume >= minVol1h  :
+  true
+
+// ─── LONG SKORU ───────────────────────────────────────────────────────────────
+bodyPctLong = (close - open) / open * 100
+
+longValid =
+  close > ema8 and
+  close > open and
+  bodyPctLong >= minBodyPct and
+  volumeFilterPassed
+
+longScore = longValid ? (
+  1 +
+  1 +
+  (volume    > volume[1] * volumeRatio ? 1 : 0) +
+  (volume[1] > volume[2] * volumeRatio ? 1 : 0) +
+  (close[1]  < ema8[1] ? 1 : 0) +
+  (close[2]  < ema8[2] ? 1 : 0) +
+  (bodyPctLong > bigBodyPct ? 3 : 0)
+  ) : 0
+
+// ─── SHORT SKORU ──────────────────────────────────────────────────────────────
+bodyPctShort = (open - close) / open * 100
+
+shortValid =
+  close < ema8 and
+  close < open and
+  bodyPctShort >= minBodyPct and
+  volumeFilterPassed
+
+shortScore = shortValid ? (
+  1 +
+  1 +
+  (volume    > volume[1] * volumeRatio ? 1 : 0) +
+  (volume[1] > volume[2] * volumeRatio ? 1 : 0) +
+  (close[1]  > ema8[1] ? 1 : 0) +
+  (close[2]  > ema8[2] ? 1 : 0) +
+  (bodyPctShort > bigBodyPct ? 3 : 0)
+  ) : 0
+
+// ─── SİNYALLER ────────────────────────────────────────────────────────────────
+longSignal  = longValid  and longScore  >= minScore
+shortSignal = shortValid and shortScore >= minScore
+
+// ─── TREND DURUMU ─────────────────────────────────────────────────────────────
+var int trendState = 0
+if longSignal
+    trendState := 1
+if shortSignal
+    trendState := -1
+
+trendLineColor = trendState == 1  ? color.new(color.lime, 0) : trendState == -1 ? color.new(color.red, 0) : color.new(color.gray, 80)
+trendBgColor   = trendState == 1  ? color.new(color.lime, 88) : trendState == -1 ? color.new(color.red, 88) : na
+
+// ─── GİRİŞ / ÇIKIŞ EMİRLERİ ──────────────────────────────────────────────────
+if longSignal and (tradeDir == "Long" or tradeDir == "Her İkisi")
+    strategy.close("Short", comment="Short Çıkış")
+    strategy.entry("Long", strategy.long, comment="▲ " + str.tostring(longScore))
+
+if shortSignal and (tradeDir == "Short" or tradeDir == "Her İkisi")
+    strategy.close("Long", comment="Long Çıkış")
+    strategy.entry("Short", strategy.short, comment="▼ " + str.tostring(shortScore))
+
+// ─── GÖRSEL ───────────────────────────────────────────────────────────────────
+bgcolor(trendBgColor, title="Trend Arka Plan")
+plot(showEma ? ema8 : na, "EMA 8", color=trendLineColor, linewidth=2)
+
+if longSignal
+    label.new(bar_index, low  * 0.998, "▲ " + str.tostring(longScore),  style=label.style_label_up,   color=color.new(color.lime, 10), textcolor=color.black, size=size.small)
+
+if shortSignal
+    label.new(bar_index, high * 1.002, "▼ " + str.tostring(shortScore), style=label.style_label_down, color=color.new(color.red,  10), textcolor=color.white, size=size.small)
