@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v1.3.0] - 2026-04-19
+
+### Değişiklikler (tradingview_indicator.pine)
+- EMA8 çizgisi trend durumuna göre renkleniyor: long=yeşil, short=kırmızı
+- Arka plan long bölgesinde silik yeşil, short bölgesinde silik kırmızı
+- Ayrı close trend çizgisi kaldırıldı
+
+---
+
 ## [v1.2.0] - 2026-04-19
 
 ### Değişiklikler (tradingview_indicator.pine)

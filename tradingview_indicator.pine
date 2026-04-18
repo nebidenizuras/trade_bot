@@ -1,5 +1,7 @@
 //@version=5
 // ─── VERSİYON GEÇMİŞİ ────────────────────────────────────────────────────────
+// v1.0.8 | 2026-04-19 | Ayrı trend çizgisi kaldırıldı, EMA8 trend rengine boyandı
+// v1.0.7 | 2026-04-19 | Trend çizgisi ve arka plan rengi eklendi (long=yeşil, short=kırmızı)
 // v1.0.6 | 2026-04-19 | EMA8 rengi turuncu'dan beyaza değiştirildi
 // v1.0.5 | 2026-04-19 | plotshape okları kaldırıldı, sadece label gösterimi kaldı
 // v1.0.4 | 2026-04-19 | alertcondition mesajı const string yapıldı (Pine Script kısıtı)
@@ -74,10 +76,22 @@ shortScore = shortValid ? (
 longSignal  = longValid  and longScore  >= minScore
 shortSignal = shortValid and shortScore >= minScore
 
-// ─── EMA ÇİZGİSİ ──────────────────────────────────────────────────────────────
-plot(showEma ? ema8 : na, "EMA 8", color=color.new(color.white, 0), linewidth=2)
+// ─── TREND DURUMU (long=1, short=-1, nötr=0) ──────────────────────────────────
+var int trendState = 0
+if longSignal
+    trendState := 1
+if shortSignal
+    trendState := -1
 
-// ─── OKLAR ────────────────────────────────────────────────────────────────────
+trendLineColor = trendState == 1  ? color.new(color.lime, 0)  : trendState == -1 ? color.new(color.red, 0)  : color.new(color.gray, 80)
+trendBgColor   = trendState == 1  ? color.new(color.lime, 88) : trendState == -1 ? color.new(color.red, 88) : na
+
+// ─── ARKA PLAN ────────────────────────────────────────────────────────────────
+bgcolor(trendBgColor, title="Trend Arka Plan")
+
+// ─── EMA ÇİZGİSİ (trend renginde) ────────────────────────────────────────────
+plot(showEma ? ema8 : na, "EMA 8", color=trendLineColor, linewidth=2)
+
 // ─── SKOR ETİKETLERİ ──────────────────────────────────────────────────────────
 if longSignal
     label.new(bar_index, low  * 0.998, "▲ " + str.tostring(longScore),  style=label.style_label_up,   color=color.new(color.lime, 10), textcolor=color.black, size=size.small)
