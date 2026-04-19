@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v1.5.0] - 2026-04-20
+
+### Değişiklikler (tradingview_indicator.pine)
+- Default davranış: son long bölgesi + son short bölgesi etiketleri gösteriliyor
+- "Tüm Geçmiş Etiketleri Göster" toggle eklendi (default kapalı) — açınca tüm geçmiş etiketler birikir
+- Etiket gösterimi trend bölgesi bazlı: bölge değişince o yönün eski etiketleri temizleniyor
+
+---
+
 ## [v1.4.0] - 2026-04-19
 
 ### Değişiklikler

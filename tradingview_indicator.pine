@@ -1,5 +1,10 @@
 //@version=5
 // ─── VERSİYON GEÇMİŞİ ────────────────────────────────────────────────────────
+// v1.5.0 | 2026-04-19 | Default: son 2 bölge etiketleri; toggle ile tüm geçmiş açılır
+// v1.4.0 | 2026-04-19 | Sinyal etiketleri açma/kapama toggle eklendi (default kapalı)
+// v1.3.0 | 2026-04-19 | Etiketler trend bölgesi bazlı: bölge değişince sıfırlanıyor
+// v1.2.0 | 2026-04-19 | Etiketler son long serisi + son short serisi olarak güncellendi
+// v1.1.0 | 2026-04-19 | Etiketler son 1 long + 1 short ile sınırlandırıldı
 // v1.0.9 | 2026-04-19 | ATR filtresi kaldırıldı, strateji ile senkronize edildi
 // v1.0.8 | 2026-04-19 | Ayrı trend çizgisi kaldırıldı, EMA8 trend rengine boyandı
 // v1.0.7 | 2026-04-19 | Trend çizgisi ve arka plan rengi eklendi (long=yeşil, short=kırmızı)
@@ -22,6 +27,7 @@ useVolFilter    = input.bool(true,    "Hacim Filtresi Uygula")
 minVol15m       = input.float(2500000,"Min Hacim - 15m ($)",    step=100000)
 minVol1h        = input.float(9000000,"Min Hacim - 1h ($)",     step=100000)
 showEma         = input.bool(true,    "EMA8 Göster")
+showAllLabels   = input.bool(false,   "Tüm Geçmiş Etiketleri Göster")
 minScore        = input.int(2,        "Min Sinyal Skoru",        minval=1, maxval=9)
 
 // ─── EMA8 ─────────────────────────────────────────────────────────────────────
@@ -93,12 +99,29 @@ bgcolor(trendBgColor, title="Trend Arka Plan")
 // ─── EMA ÇİZGİSİ (trend renginde) ────────────────────────────────────────────
 plot(showEma ? ema8 : na, "EMA 8", color=trendLineColor, linewidth=2)
 
-// ─── SKOR ETİKETLERİ ──────────────────────────────────────────────────────────
+// ─── SKOR ETİKETLERİ (son long bölgesi + son short bölgesi tümü) ─────────────
+var label[] longLabels  = array.new_label()
+var label[] shortLabels = array.new_label()
+var int prevTrendState  = 0
+
+// Trend bölgesi değişince o yönün eski etiketleri siliniyor (tam geçmiş modunda silinmez)
+if not showAllLabels
+    if trendState == 1 and prevTrendState != 1
+        for lbl in longLabels
+            label.delete(lbl)
+        array.clear(longLabels)
+    if trendState == -1 and prevTrendState != -1
+        for lbl in shortLabels
+            label.delete(lbl)
+        array.clear(shortLabels)
+
+prevTrendState := trendState
+
 if longSignal
-    label.new(bar_index, low  * 0.998, "▲ " + str.tostring(longScore),  style=label.style_label_up,   color=color.new(color.lime, 10), textcolor=color.black, size=size.small)
+    array.push(longLabels,  label.new(bar_index, low  * 0.998, "▲ " + str.tostring(longScore),  style=label.style_label_up,   color=color.new(color.lime, 10), textcolor=color.black, size=size.small))
 
 if shortSignal
-    label.new(bar_index, high * 1.002, "▼ " + str.tostring(shortScore), style=label.style_label_down, color=color.new(color.red,  10), textcolor=color.white, size=size.small)
+    array.push(shortLabels, label.new(bar_index, high * 1.002, "▼ " + str.tostring(shortScore), style=label.style_label_down, color=color.new(color.red,  10), textcolor=color.white, size=size.small))
 
 // ─── ALERT KOŞULLARI ──────────────────────────────────────────────────────────
 alertcondition(longSignal,  "Long Sinyal",  "🟢 LONG sinyali oluştu")
